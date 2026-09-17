@@ -3,6 +3,7 @@ import { ValidationPipe } from "@nestjs/common";
 import { NestFactory } from "@nestjs/core";
 import { DocumentBuilder, SwaggerModule } from "@nestjs/swagger";
 import { AppModule } from "./app.module";
+import { AuthService } from "./auth/auth.service";
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -28,6 +29,9 @@ async function bootstrap() {
   app.enableCors({
     origin: configService.get<string>("FRONTEND_URL") ?? "http://localhost:3000",
   });
+
+  await app.init();
+  await app.get(AuthService).ensureInitialAdmin();
 
   const port = Number(configService.get<string>("PORT") ?? 3001);
   await app.listen(port);

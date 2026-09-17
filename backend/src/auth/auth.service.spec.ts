@@ -1,10 +1,12 @@
 import { UnauthorizedException } from "@nestjs/common";
+import { ConfigService } from "@nestjs/config";
 import { JwtService } from "@nestjs/jwt";
 import * as bcrypt from "bcrypt";
 import { AuthService } from "./auth.service";
 
 jest.mock("bcrypt", () => ({
   compare: jest.fn(),
+  hash: jest.fn(),
 }));
 
 describe("AuthService", () => {
@@ -16,15 +18,55 @@ describe("AuthService", () => {
   const prisma = {
     admin: {
       findUnique: jest.fn(),
+      create: jest.fn(),
     },
   };
   const jwtService = {
     signAsync: jest.fn(),
   } as unknown as JwtService;
-  const service = new AuthService(prisma as never, jwtService);
+  const configService = {
+    get: jest.fn(),
+  } as unknown as ConfigService;
+  const service = new AuthService(prisma as never, jwtService, configService);
 
   beforeEach(() => {
     jest.clearAllMocks();
+  });
+
+  it("creates the initial admin when configured and missing", async () => {
+    configService.get = jest.fn((key: string) =>
+      key === "ADMIN_EMAIL" ? admin.email : "correct-password",
+    );
+    prisma.admin.findUnique.mockResolvedValue(null);
+    jest.mocked(bcrypt.hash).mockResolvedValue("hashed-password" as never);
+
+    await service.ensureInitialAdmin();
+
+    expect(bcrypt.hash).toHaveBeenCalledWith("correct-password", 12);
+    expect(prisma.admin.create).toHaveBeenCalledWith({
+      data: { email: admin.email, passwordHash: "hashed-password" },
+    });
+  });
+
+  it("does not overwrite an existing initial admin", async () => {
+    configService.get = jest.fn((key: string) =>
+      key === "ADMIN_EMAIL" ? admin.email : "correct-password",
+    );
+    prisma.admin.findUnique.mockResolvedValue({ id: admin.id });
+
+    await service.ensureInitialAdmin();
+
+    expect(bcrypt.hash).not.toHaveBeenCalled();
+    expect(prisma.admin.create).not.toHaveBeenCalled();
+  });
+
+  it("skips bootstrap when credentials are missing", async () => {
+    configService.get = jest.fn().mockReturnValue(undefined);
+
+    await service.ensureInitialAdmin();
+
+    expect(prisma.admin.findUnique).not.toHaveBeenCalled();
+    expect(prisma.admin.create).not.toHaveBeenCalled();
   });
 
   it("returns an access token for valid credentials", async () => {
