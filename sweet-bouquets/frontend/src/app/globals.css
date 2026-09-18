@@ -1185,7 +1185,10 @@ button:disabled {
 }
 
 .public-site .public-product-card {
+  display: flex;
   min-width: 0;
+  height: 100%;
+  flex-direction: column;
   border: 0;
   background: transparent;
 }
@@ -1221,6 +1224,10 @@ button:disabled {
 }
 
 .public-site .public-product-copy {
+  display: flex;
+  min-width: 0;
+  flex: 1;
+  flex-direction: column;
   padding: 1.15rem 0.1rem 0;
 }
 
@@ -1245,13 +1252,51 @@ button:disabled {
 }
 
 .public-site .public-product-copy p {
-  min-height: 4.35rem;
-  margin: 0.7rem 0 1.2rem;
   color: #60736d;
   font-size: 0.88rem;
 }
 
+.public-site .product-description {
+  display: -webkit-box;
+  min-height: 0;
+  margin: 0.7rem 0 1.2rem;
+  overflow: hidden;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 4;
+  flex: 1;
+  line-height: 1.55;
+}
+
+.public-site .product-card-bottom {
+  display: grid;
+  gap: 0.8rem;
+  margin-top: auto;
+}
+
+.public-site .product-price {
+  color: var(--public-green);
+  font-family: Arial, sans-serif;
+  font-size: 1.1rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
+.public-site .unavailable-state {
+  display: flex;
+  min-height: 3.1rem;
+  align-items: center;
+  border-left: 2px solid #bca99a;
+  color: #7d7067;
+  font-family: Arial, sans-serif;
+  font-size: 0.76rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  padding: 0.75rem 0 0.75rem 0.85rem;
+  text-transform: uppercase;
+}
+
 .public-site .order-button {
+  min-height: 3.1rem;
   border-color: var(--public-line);
   color: var(--public-green);
 }
@@ -1275,14 +1320,130 @@ button:disabled {
   min-width: 0;
 }
 
+.public-site .contact-heading {
+  align-self: start;
+}
+
+.public-site .contact-heading h2 {
+  margin-bottom: 1.25rem;
+}
+
+.public-site .contact-intro {
+  max-width: 28rem;
+  margin: 0;
+  color: #d9e5dc;
+  font-family: Arial, sans-serif;
+  line-height: 1.65;
+}
+
 .public-site .contact-copy {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
 }
 
-.public-site .contact-copy p {
-  max-width: 34rem;
+.public-site .contact-methods {
+  display: grid;
+  width: 100%;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.75rem;
+}
+
+.public-site .contact-card {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 0.8rem;
+  border: 1px solid rgba(255, 250, 244, 0.25);
+  border-radius: 0.35rem;
+  color: #fffaf4;
+  padding: 1rem;
+  text-decoration: none;
+  transition: border-color 180ms ease, background-color 180ms ease, transform 180ms ease;
+}
+
+.public-site .contact-card:hover {
+  border-color: #e4b46e;
+  background: rgba(255, 250, 244, 0.08);
+  transform: translateY(-2px);
+}
+
+.public-site .contact-card:focus-visible,
+.public-site .contact-cta:focus-visible {
+  outline: 3px solid #e4b46e;
+  outline-offset: 3px;
+}
+
+.public-site .contact-icon {
+  display: grid;
+  flex: 0 0 2.5rem;
+  width: 2.5rem;
+  height: 2.5rem;
+  place-items: center;
+  border-radius: 50%;
+  background: #e4b46e;
+  color: #315d57;
+}
+
+.public-site .contact-icon svg {
+  width: 1.15rem;
+  height: 1.15rem;
+  stroke: currentColor;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 1.7;
+}
+
+.public-site .contact-content {
+  display: grid;
+  min-width: 0;
+  gap: 0.25rem;
+}
+
+.public-site .contact-label {
+  color: #e4b46e;
+  font-family: Arial, sans-serif;
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.public-site .contact-value {
+  color: #fffaf4;
+  font-family: Arial, sans-serif;
+  font-size: 0.83rem;
+  overflow-wrap: anywhere;
+}
+
+.public-site .contact-cta {
+  display: inline-flex;
+  width: fit-content;
+  max-width: 100%;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.25rem;
+  margin-top: 1.25rem;
+  border-radius: 0.2rem;
+  background: #e4b46e;
+  color: #315d57;
+  font-family: Arial, sans-serif;
+  font-size: 0.76rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  padding: 1rem 1.1rem;
+  text-decoration: none;
+  text-transform: uppercase;
+  transition: background-color 180ms ease, transform 180ms ease;
+}
+
+.public-site .contact-cta:hover {
+  background: #f0c985;
+  transform: translateY(-2px);
+}
+
+.public-site .contact-note {
+  max-width: 100%;
   overflow-wrap: anywhere;
 }
 
@@ -1451,6 +1612,14 @@ button:disabled {
     grid-template-columns: 1fr;
     gap: 2rem;
     padding: 3rem 1.4rem;
+  }
+
+  .public-site .contact-methods {
+    grid-template-columns: 1fr;
+  }
+
+  .public-site .contact-card {
+    width: 100%;
   }
 
   .public-site .site-footer {

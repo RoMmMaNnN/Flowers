@@ -4,6 +4,19 @@ export const siteConfig = {
   instagramUrl: process.env.NEXT_PUBLIC_INSTAGRAM_URL?.trim() ?? "",
 };
 
+export function formatPhoneForDisplay(phone: string) {
+  const digits = phone.replace(/\D/g, "");
+  if (digits.startsWith("44") && digits.length === 12) {
+    return `+44 ${digits.slice(2, 6)} ${digits.slice(6)}`;
+  }
+  return phone;
+}
+
+export function phoneHref(phone: string) {
+  const digits = phone.replace(/\D/g, "");
+  return digits ? `tel:+${digits}` : "";
+}
+
 export function productEnquiryHref(product: { title: string; pricePence: number | null }) {
   if (!siteConfig.businessEmail) return null;
   const price = product.pricePence === null ? "No price set; please confirm" : `£${(product.pricePence / 100).toFixed(2)}`;

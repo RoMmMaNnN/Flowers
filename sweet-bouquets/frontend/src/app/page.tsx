@@ -3,7 +3,7 @@
 import Image from "next/image";
 import { useEffect, useState } from "react";
 import { api, Product } from "@/lib/api";
-import { productEnquiryHref, siteConfig } from "@/lib/site-config";
+import { formatPhoneForDisplay, phoneHref, productEnquiryHref, siteConfig } from "@/lib/site-config";
 
 export default function Home() {
   const [products, setProducts] = useState<Product[]>([]);
@@ -86,11 +86,15 @@ export default function Home() {
       </section>
 
       <section className="contact-section" id="contact" aria-labelledby="contact-title">
-        <div className="contact-heading"><p className="section-label">Order simply</p><h2 id="contact-title">Found the one?</h2></div>
-        <div className="contact-copy"><p>Choose a bouquet from the collection and send a quick enquiry. Your email client will open with the product details ready to review.</p>{siteConfig.businessEmail ? <><a className="primary-cta light-cta" href={`mailto:${siteConfig.businessEmail}?subject=${encodeURIComponent("Sweet bouquet enquiry")}`}>Start an enquiry <span aria-hidden="true">↗</span></a><p><a href={`mailto:${siteConfig.businessEmail}`}>{siteConfig.businessEmail}</a></p></> : <p className="contact-note">Our ordering email will be available here soon.</p>}{siteConfig.phone && <p><a href={`tel:${siteConfig.phone}`}>{siteConfig.phone}</a></p>}{siteConfig.instagramUrl && <p><a href={siteConfig.instagramUrl} target="_blank" rel="noopener noreferrer">Instagram <span aria-hidden="true">↗</span></a></p>}</div>
+        <div className="contact-heading"><p className="section-label">Order simply</p><h2 id="contact-title">Contact</h2><p className="contact-intro">Have a question or found a favourite? Send us an enquiry and we will help you arrange something sweet.</p></div>
+        <div className="contact-copy"><div className="contact-methods">
+          {siteConfig.businessEmail && <a className="contact-card" href={`mailto:${siteConfig.businessEmail}`}><ContactIcon type="email" /><span className="contact-content"><span className="contact-label">Email</span><span className="contact-value">{siteConfig.businessEmail}</span></span></a>}
+          {siteConfig.phone && <a className="contact-card" href={phoneHref(siteConfig.phone)}><ContactIcon type="phone" /><span className="contact-content"><span className="contact-label">Phone</span><span className="contact-value">{formatPhoneForDisplay(siteConfig.phone)}</span></span></a>}
+          {siteConfig.instagramUrl && <a className="contact-card" href={siteConfig.instagramUrl} target="_blank" rel="noopener noreferrer"><ContactIcon type="instagram" /><span className="contact-content"><span className="contact-label">Instagram</span><span className="contact-value">Visit our Instagram <span aria-hidden="true">↗</span></span></span></a>}
+        </div>{siteConfig.businessEmail ? <a className="contact-cta" href={`mailto:${siteConfig.businessEmail}?subject=${encodeURIComponent("Sweet bouquet enquiry")}`}>Start an enquiry <span aria-hidden="true">↗</span></a> : <p className="contact-note">Our ordering email will be available here soon.</p>}</div>
       </section>
 
-      <footer className="site-footer"><a className="brand-mark" href="#top"><span className="brand-dot" aria-hidden="true" /><span>Sweet Bouquets</span></a><p>Handmade sweet gifts for meaningful moments.</p><nav aria-label="Footer navigation"><a href="#products">Collection</a><a href="#about">Our approach</a><a href="#contact">Contact</a></nav><div className="footer-contact" aria-label="Contact details">{siteConfig.businessEmail && <a href={`mailto:${siteConfig.businessEmail}`}>{siteConfig.businessEmail}</a>}{siteConfig.phone && <a href={`tel:${siteConfig.phone}`}>{siteConfig.phone}</a>}{siteConfig.instagramUrl && <a href={siteConfig.instagramUrl} target="_blank" rel="noopener noreferrer">Instagram <span aria-hidden="true">↗</span></a>}</div></footer>
+      <footer className="site-footer"><a className="brand-mark" href="#top"><span className="brand-dot" aria-hidden="true" /><span>Sweet Bouquets</span></a><p>Handmade sweet gifts for meaningful moments.</p><nav aria-label="Footer navigation"><a href="#products">Collection</a><a href="#about">Our approach</a><a href="#contact">Contact</a></nav><div className="footer-contact" aria-label="Contact details">{siteConfig.businessEmail && <a href={`mailto:${siteConfig.businessEmail}`}>{siteConfig.businessEmail}</a>}{siteConfig.phone && <a href={phoneHref(siteConfig.phone)}>{formatPhoneForDisplay(siteConfig.phone)}</a>}{siteConfig.instagramUrl && <a href={siteConfig.instagramUrl} target="_blank" rel="noopener noreferrer">Instagram <span aria-hidden="true">↗</span></a>}</div></footer>
     </main>
   );
 }
@@ -103,7 +107,17 @@ function ProductCard({ product, index, onOrder }: { product: Product; index: num
         {product.images[0]?.imageUrl && !imageBroken ? <Image src={product.images[0].imageUrl} alt={`${product.title} sweet bouquet`} fill sizes="(max-width: 760px) 100vw, (max-width: 1100px) 50vw, 33vw" onError={() => setImageBroken(true)} /> : <div className="image-placeholder" aria-label="Image coming soon"><span aria-hidden="true">SB</span><small>Image coming soon</small></div>}
         <span className="image-index" aria-hidden="true">{String(index + 1).padStart(2, "0")}</span>
       </div>
-      <div className="public-product-copy"><div className="product-card-meta"><span>Sweet bouquet</span><span>{product.pricePence === null ? "Price on enquiry" : `£${(product.pricePence / 100).toFixed(2)}`}</span></div><h3>{product.title}</h3><p>{product.description}</p>{product.isAvailable ? <button className="order-button" type="button" onClick={() => onOrder(product)}>Enquire about this bouquet <span aria-hidden="true">↗</span></button> : <p className="contact-note">Currently unavailable</p>}</div>
+      <div className="public-product-copy"><div className="product-card-meta"><span>Sweet bouquet</span><span>{String(index + 1).padStart(2, "0")}</span></div><h3>{product.title}</h3><p className="product-description">{product.description}</p><div className="product-card-bottom"><div className="product-price">{product.pricePence === null ? "Price not set" : `£${(product.pricePence / 100).toFixed(2)}`}</div>{product.isAvailable ? <button className="order-button" type="button" onClick={() => onOrder(product)}>Enquire about this bouquet <span aria-hidden="true">↗</span></button> : <div className="unavailable-state">Unavailable</div>}</div></div>
     </article>
   );
+}
+
+function ContactIcon({ type }: { type: "email" | "phone" | "instagram" }) {
+  if (type === "email") {
+    return <span className="contact-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><path d="m3 6 9 7 9-7" /><rect x="3" y="5" width="18" height="14" rx="2" /></svg></span>;
+  }
+  if (type === "phone") {
+    return <span className="contact-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><path d="M7.5 3.5 5 5c-.8.5-.9 1.5-.6 2.4 1.7 5.6 5.9 9.8 11.5 11.5.9.3 1.9.2 2.4-.6l1.5-2.5-3.8-2.3-1.8 1.8a15 15 0 0 1-4.5-4.5l1.8-1.8-2.3-3.8Z" /></svg></span>;
+  }
+  return <span className="contact-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><rect x="4" y="4" width="16" height="16" rx="4" /><circle cx="12" cy="12" r="3.5" /><circle cx="17.2" cy="6.8" r=".8" fill="currentColor" stroke="none" /></svg></span>;
 }
