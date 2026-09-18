@@ -5,6 +5,8 @@ import { DocumentBuilder, SwaggerModule } from "@nestjs/swagger";
 import type { CustomOrigin } from "@nestjs/common/interfaces/external/cors-options.interface";
 import { AppModule } from "./app.module";
 import { AuthService } from "./auth/auth.service";
+import { GlobalExceptionFilter } from "./common/global-exception.filter";
+import { HttpLoggingInterceptor } from "./common/http-logging.interceptor";
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -24,6 +26,8 @@ async function bootstrap() {
       forbidNonWhitelisted: true,
     }),
   );
+  app.useGlobalInterceptors(new HttpLoggingInterceptor());
+  app.useGlobalFilters(new GlobalExceptionFilter());
 
   const swaggerConfig = new DocumentBuilder()
     .setTitle("Sweet Bouquets API")

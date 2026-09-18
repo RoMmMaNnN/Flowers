@@ -14,7 +14,7 @@ export class CreateProductDto {
   @IsOptional()
   @IsInt()
   @Min(0)
-  pricePence?: number;
+  pricePence?: number | null;
 
   @ApiPropertyOptional({ example: true, default: true })
   @IsOptional()

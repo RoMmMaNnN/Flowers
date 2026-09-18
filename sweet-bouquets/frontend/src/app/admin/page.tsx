@@ -83,10 +83,10 @@ export default function AdminDashboardPage() {
       description: form.description.trim(),
       sortOrder: Number(form.sortOrder),
       isVisible: form.isVisible,
-      pricePence: form.pricePence.trim() === "" ? undefined : Number(form.pricePence),
+      pricePence: form.pricePence.trim() === "" ? null : Number(form.pricePence),
       isAvailable: form.isAvailable,
     };
-    if (!input.title || !input.description || !Number.isInteger(input.sortOrder) || input.sortOrder < 0 || (input.pricePence !== undefined && (!Number.isInteger(input.pricePence) || input.pricePence < 0))) {
+    if (!input.title || !input.description || !Number.isInteger(input.sortOrder) || input.sortOrder < 0 || (input.pricePence !== null && (!Number.isInteger(input.pricePence) || input.pricePence < 0))) {
       setError("Add a title, description, valid sort order, and a non-negative price in pence if needed.");
       setSaving(false);
       return;
