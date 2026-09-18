@@ -10,10 +10,16 @@ export class CreateProductDto {
   @IsString()
   description!: string;
 
-  @ApiPropertyOptional({ example: "https://example.com/image.jpg" })
+  @ApiPropertyOptional({ example: 2499, description: "Price in pence" })
   @IsOptional()
-  @IsString()
-  imageUrl?: string;
+  @IsInt()
+  @Min(0)
+  pricePence?: number;
+
+  @ApiPropertyOptional({ example: true, default: true })
+  @IsOptional()
+  @IsBoolean()
+  isAvailable?: boolean;
 
   @ApiPropertyOptional({ example: true, default: true })
   @IsOptional()

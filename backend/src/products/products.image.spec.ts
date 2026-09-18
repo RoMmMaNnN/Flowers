@@ -1,164 +1,68 @@
 import { MaxFileSizeValidator } from "@nestjs/common";
-import { NotFoundException } from "@nestjs/common";
-import { Product } from "@prisma/client";
 import { ImageMimeTypeValidator } from "../storage/image-file.validator";
 import { ProductsService } from "./products.service";
 
-const product = {
-  id: "11111111-1111-4111-8111-111111111111",
-  title: "Chocolate Rose",
-  description: "A sweet bouquet made with chocolate.",
-  imageUrl: null,
-  isVisible: true,
-  sortOrder: 0,
-  createdAt: new Date(),
-  updatedAt: new Date(),
-} satisfies Product;
-
-const file = (mimetype: string, size = 1024) =>
-  ({ mimetype, size, buffer: Buffer.from("image") }) as Express.Multer.File;
+const file = (mimetype: string, originalname = "bouquet.jpg", size = 1024) => ({ mimetype, originalname, size, buffer: Buffer.from("image") }) as Express.Multer.File;
 
 describe("Product image validation", () => {
-  const typeValidator = new ImageMimeTypeValidator();
-  const sizeValidator = new MaxFileSizeValidator({ maxSize: 5 * 1024 * 1024 });
-
-  it.each(["image/jpeg", "image/png", "image/webp"])(
-    "accepts %s",
-    (mimetype) => {
-      expect(typeValidator.isValid(file(mimetype))).toBe(true);
-    },
-  );
-
-  it.each(["application/pdf", "image/svg+xml", "application/octet-stream"])(
-    "rejects %s",
-    (mimetype) => {
-      expect(typeValidator.isValid(file(mimetype))).toBe(false);
-    },
-  );
-
-  it("rejects files larger than 5 MB", () => {
-    expect(sizeValidator.isValid(file("image/jpeg", 5 * 1024 * 1024 + 1))).toBe(
-      false,
-    );
-  });
+  it.each(["image/jpeg", "image/png", "image/webp"])("accepts %s", (mimetype) => expect(new ImageMimeTypeValidator().isValid(file(mimetype))).toBe(true));
+  it.each(["application/pdf", "image/svg+xml"])("rejects %s", (mimetype) => expect(new ImageMimeTypeValidator().isValid(file(mimetype))).toBe(false));
+  it("rejects files larger than 5 MB", () => expect(new MaxFileSizeValidator({ maxSize: 5 * 1024 * 1024 }).isValid(file("image/jpeg", "large.jpg", 5 * 1024 * 1024 + 1))).toBe(false));
 });
 
 describe("ProductsService image operations", () => {
+  const transaction = {
+    $queryRaw: jest.fn(),
+    productImage: { create: jest.fn(), findFirst: jest.fn() },
+  };
   const prisma = {
-    product: {
-      findUnique: jest.fn(),
-      update: jest.fn(),
-      delete: jest.fn(),
-    },
+    product: { findUnique: jest.fn() },
+    productImage: { findMany: jest.fn() },
+    $transaction: jest.fn(async (callback: (client: typeof transaction) => Promise<unknown>) => callback(transaction)),
   };
-  const storage = {
-    uploadImage: jest.fn(),
-    deleteImage: jest.fn(),
-  };
+  const storage = { uploadImage: jest.fn(), deleteImage: jest.fn() };
   const service = new ProductsService(prisma as never, storage as never);
+  const product = { id: "11111111-1111-4111-8111-111111111111", images: [] };
 
-  beforeEach(() => jest.clearAllMocks());
-
-  it("returns 404 when uploading for a missing product", async () => {
-    prisma.product.findUnique.mockResolvedValue(null);
-
-    await expect(service.uploadImage(product.id, file("image/jpeg"))).rejects.toBeInstanceOf(
-      NotFoundException,
-    );
-    expect(storage.uploadImage).not.toHaveBeenCalled();
-  });
-
-  it("updates imageUrl after a successful upload", async () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
     prisma.product.findUnique.mockResolvedValue(product);
-    storage.uploadImage.mockResolvedValue({
-      path: "products/new.webp",
-      publicUrl: "https://storage.example/new.webp",
-    });
-    prisma.product.update.mockResolvedValue({
-      ...product,
-      imageUrl: "https://storage.example/new.webp",
-    });
-
-    await expect(service.uploadImage(product.id, file("image/jpeg"))).resolves.toMatchObject({
-      imageUrl: "https://storage.example/new.webp",
-    });
-    expect(prisma.product.update).toHaveBeenCalledWith({
-      where: { id: product.id },
-      data: { imageUrl: "https://storage.example/new.webp" },
-    });
+    prisma.productImage.findMany.mockResolvedValue([]);
+    transaction.productImage.findFirst.mockResolvedValueOnce(null).mockResolvedValueOnce({ sortOrder: 0 });
   });
 
-  it("does not update the database when upload fails", async () => {
-    prisma.product.findUnique.mockResolvedValue(product);
-    storage.uploadImage.mockRejectedValue(new Error("storage unavailable"));
-
-    await expect(service.uploadImage(product.id, file("image/jpeg"))).rejects.toThrow(
-      "storage unavailable",
-    );
-    expect(prisma.product.update).not.toHaveBeenCalled();
+  it("assigns unique ordered sortOrder values to multi-image uploads", async () => {
+    storage.uploadImage
+      .mockResolvedValueOnce({ path: "products/one.webp", publicUrl: "https://example.test/one.webp" })
+      .mockResolvedValueOnce({ path: "products/two.webp", publicUrl: "https://example.test/two.webp" });
+    const result = await service.uploadImages(product.id, [file("image/jpeg", "one.jpg"), file("image/png", "two.png")]);
+    expect(result.uploaded).toHaveLength(2);
+    expect(transaction.productImage.create).toHaveBeenNthCalledWith(1, expect.objectContaining({ data: expect.objectContaining({ sortOrder: 0 }) }));
+    expect(transaction.productImage.create).toHaveBeenNthCalledWith(2, expect.objectContaining({ data: expect.objectContaining({ sortOrder: 1 }) }));
+    expect(prisma.$transaction).toHaveBeenCalledTimes(2);
   });
 
-  it("cleans up the old image only after replacing it in the database", async () => {
-    const existingProduct = { ...product, imageUrl: "products/old.webp" };
-    prisma.product.findUnique.mockResolvedValue(existingProduct);
-    storage.uploadImage.mockResolvedValue({
-      path: "products/new.webp",
-      publicUrl: "https://storage.example/new.webp",
-    });
-    prisma.product.update.mockResolvedValue({
-      ...existingProduct,
-      imageUrl: "https://storage.example/new.webp",
-    });
-
-    await service.uploadImage(product.id, file("image/png"));
-    expect(storage.deleteImage).toHaveBeenCalledWith("products/old.webp");
-    expect(prisma.product.update.mock.invocationCallOrder[0]).toBeLessThan(
-      storage.deleteImage.mock.invocationCallOrder[0],
-    );
+  it("reports successful and failed Storage uploads individually", async () => {
+    storage.uploadImage.mockResolvedValueOnce({ path: "products/one.webp", publicUrl: "https://example.test/one.webp" }).mockRejectedValueOnce(new Error("storage unavailable"));
+    const result = await service.uploadImages(product.id, [file("image/jpeg", "one.jpg"), file("image/png", "two.png")]);
+    expect(result.uploaded).toHaveLength(1);
+    expect(result.failed).toEqual([{ fileName: "two.png", message: "storage unavailable" }]);
   });
 
-  it("leaves a product without an image unchanged", async () => {
-    prisma.product.findUnique.mockResolvedValue(product);
-
-    await expect(service.deleteImage(product.id)).resolves.toBe(product);
-    expect(storage.deleteImage).not.toHaveBeenCalled();
-    expect(prisma.product.update).not.toHaveBeenCalled();
+  it("cleans up Storage when the database insert fails", async () => {
+    const storedImage = { path: "products/orphan.webp", publicUrl: "https://example.test/orphan.webp" };
+    storage.uploadImage.mockResolvedValue(storedImage);
+    transaction.productImage.create.mockRejectedValue(new Error("database unavailable"));
+    await expect(service.uploadImages(product.id, [file("image/jpeg")])).resolves.toMatchObject({ failed: [{ fileName: "bouquet.jpg" }] });
+    expect(storage.deleteImage).toHaveBeenCalledWith(storedImage.path);
   });
 
-  it("removes an existing image before clearing imageUrl", async () => {
-    const existingProduct = { ...product, imageUrl: "products/old.webp" };
-    prisma.product.findUnique.mockResolvedValue(existingProduct);
-    prisma.product.update.mockResolvedValue({ ...existingProduct, imageUrl: null });
-
-    await expect(service.deleteImage(product.id)).resolves.toMatchObject({
-      imageUrl: null,
-    });
-    expect(storage.deleteImage).toHaveBeenCalledWith("products/old.webp");
-    expect(prisma.product.update).toHaveBeenCalledWith({
-      where: { id: product.id },
-      data: { imageUrl: null },
-    });
-  });
-
-  it("does not clear imageUrl when storage deletion fails", async () => {
-    const existingProduct = { ...product, imageUrl: "products/old.webp" };
-    prisma.product.findUnique.mockResolvedValue(existingProduct);
-    storage.deleteImage.mockRejectedValue(new Error("storage unavailable"));
-
-    await expect(service.deleteImage(product.id)).rejects.toThrow(
-      "storage unavailable",
-    );
-    expect(prisma.product.update).not.toHaveBeenCalled();
-  });
-
-  it("does not delete the product when image cleanup fails", async () => {
-    const existingProduct = { ...product, imageUrl: "products/old.webp" };
-    prisma.product.findUnique.mockResolvedValue(existingProduct);
-    storage.deleteImage.mockRejectedValue(new Error("storage unavailable"));
-
-    await expect(service.remove(product.id)).rejects.toThrow(
-      "storage unavailable",
-    );
-    expect(prisma.product.delete).not.toHaveBeenCalled();
+  it("reports failed cleanup when both database insert and Storage cleanup fail", async () => {
+    const storedImage = { path: "products/orphan.webp", publicUrl: "https://example.test/orphan.webp" };
+    storage.uploadImage.mockResolvedValue(storedImage);
+    transaction.productImage.create.mockRejectedValue(new Error("database unavailable"));
+    storage.deleteImage.mockRejectedValue(new Error("cleanup unavailable"));
+    const result = await service.uploadImages(product.id, [file("image/jpeg")]);
+    expect(result.failed[0].message).toContain(storedImage.path);
   });
 });

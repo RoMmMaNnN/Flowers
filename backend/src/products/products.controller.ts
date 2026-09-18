@@ -1,19 +1,18 @@
 import {
   Body,
+  BadRequestException,
   Controller,
   Delete,
   Get,
-  MaxFileSizeValidator,
   Param,
-  ParseFilePipe,
   ParseUUIDPipe,
   Patch,
   Post,
-  UploadedFile,
+  UploadedFiles,
   UseGuards,
   UseInterceptors,
 } from "@nestjs/common";
-import { FileInterceptor } from "@nestjs/platform-express";
+import { FilesInterceptor } from "@nestjs/platform-express";
 import {
   ApiBadRequestResponse,
   ApiBearerAuth,
@@ -28,6 +27,7 @@ import { JwtAuthGuard } from "../auth/guards/jwt-auth.guard";
 import { ImageMimeTypeValidator } from "../storage/image-file.validator";
 import { CreateProductDto } from "./dto/create-product.dto";
 import { UpdateProductDto } from "./dto/update-product.dto";
+import { ReorderImagesDto } from "./dto/reorder-images.dto";
 import { ProductsService } from "./products.service";
 
 @ApiTags("products")
@@ -63,47 +63,60 @@ export class ProductsController {
   @ApiBadRequestResponse({ description: "Invalid product UUID" })
   @ApiNotFoundResponse({ description: "Product not found" })
   findOne(@Param("id", new ParseUUIDPipe()) id: string) {
-    return this.productsService.findOne(id);
+    return this.productsService.findPublicOne(id);
   }
 
-  @Post(":id/image")
+  @Post(":id/images")
   @ApiBearerAuth()
   @UseGuards(JwtAuthGuard)
   @UseInterceptors(
-    FileInterceptor("image", { limits: { fileSize: 5 * 1024 * 1024 } }),
+    FilesInterceptor("images", 12, { limits: { fileSize: 5 * 1024 * 1024 } }),
   )
   @ApiConsumes("multipart/form-data")
   @ApiBody({
     schema: {
       type: "object",
-      required: ["image"],
-      properties: { image: { type: "string", format: "binary" } },
+      required: ["images"],
+      properties: { images: { type: "array", items: { type: "string", format: "binary" } } },
     },
   })
   @ApiOperation({ summary: "Upload a product image" })
   @ApiParam({ name: "id", format: "uuid" })
-  uploadImage(
+  uploadImages(
     @Param("id", new ParseUUIDPipe()) id: string,
-    @UploadedFile(
-      new ParseFilePipe({
-        validators: [
-          new MaxFileSizeValidator({ maxSize: 5 * 1024 * 1024 }),
-          new ImageMimeTypeValidator(),
-        ],
-      }),
-    )
-    file: Express.Multer.File,
+    @UploadedFiles()
+    files: Express.Multer.File[],
   ) {
-    return this.productsService.uploadImage(id, file);
+    if (!files?.length || files.some((file) => file.size > 5 * 1024 * 1024 || !new ImageMimeTypeValidator().isValid(file))) {
+      throw new BadRequestException("Each image must be a JPEG, PNG, or WebP no larger than 5 MB");
+    }
+    return this.productsService.uploadImages(id, files);
   }
 
-  @Delete(":id/image")
+  @Delete(":id/images/:imageId")
   @ApiBearerAuth()
   @UseGuards(JwtAuthGuard)
   @ApiOperation({ summary: "Delete a product image" })
   @ApiParam({ name: "id", format: "uuid" })
-  deleteImage(@Param("id", new ParseUUIDPipe()) id: string) {
-    return this.productsService.deleteImage(id);
+  deleteImage(
+    @Param("id", new ParseUUIDPipe()) id: string,
+    @Param("imageId", new ParseUUIDPipe()) imageId: string,
+  ) {
+    return this.productsService.deleteImage(id, imageId);
+  }
+
+  @Delete(":id/images")
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard)
+  deleteAllImages(@Param("id", new ParseUUIDPipe()) id: string) {
+    return this.productsService.deleteAllImages(id);
+  }
+
+  @Patch(":id/images/order")
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard)
+  reorderImages(@Param("id", new ParseUUIDPipe()) id: string, @Body() dto: ReorderImagesDto) {
+    return this.productsService.reorderImages(id, dto.imageIds);
   }
 
   @Patch(":id")

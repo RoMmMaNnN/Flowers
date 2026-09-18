@@ -3,8 +3,7 @@
 import Image from "next/image";
 import { useEffect, useState } from "react";
 import { api, Product } from "@/lib/api";
-
-const orderEmail = process.env.NEXT_PUBLIC_ORDER_EMAIL?.trim() ?? "";
+import { productEnquiryHref, siteConfig } from "@/lib/site-config";
 
 export default function Home() {
   const [products, setProducts] = useState<Product[]>([]);
@@ -26,23 +25,12 @@ export default function Home() {
   }, []);
 
   function handleOrder(product: Product) {
-    if (!orderEmail) {
+    const enquiryHref = productEnquiryHref(product);
+    if (!enquiryHref) {
       setOrderMessage("Ordering email is not configured yet. Please check back soon.");
       return;
     }
-    const subject = `Order enquiry: ${product.title}`;
-    const body = [
-      `Hello, I would like to ask about the availability of ${product.title}.`,
-      "",
-      `Product: ${product.title}`,
-      `Description: ${product.description}`,
-      "",
-      "I would love to discuss availability and any customisation options.",
-      "",
-      "My name:",
-      "My contact details:",
-    ].join("\n");
-    window.location.href = `mailto:${orderEmail}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+    window.location.href = enquiryHref;
   }
 
   const closeMenu = () => setMenuOpen(false);
@@ -78,7 +66,7 @@ export default function Home() {
           <div className="hero-note"><span aria-hidden="true">✦</span><span>Made for birthdays, thank-yous, and just because.</span></div>
         </div>
         <div className="hero-art" aria-label="A selection of sweet bouquet treats">
-          {products[0]?.imageUrl ? <Image src={products[0].imageUrl} alt="" fill priority sizes="(max-width: 760px) 100vw, 47vw" /> : <div className="hero-still-life" aria-hidden="true"><span className="hero-ribbon">made to be remembered</span><span className="hero-chocolate chocolate-one">cocoa</span><span className="hero-chocolate chocolate-two">sweet</span><span className="hero-chocolate chocolate-three">love</span><span className="hero-stem stem-one" /><span className="hero-stem stem-two" /><span className="hero-stem stem-three" /></div>}
+          {products[0]?.images[0]?.imageUrl ? <Image src={products[0].images[0].imageUrl} alt="" fill priority sizes="(max-width: 760px) 100vw, 47vw" /> : <div className="hero-still-life" aria-hidden="true"><span className="hero-ribbon">made to be remembered</span><span className="hero-chocolate chocolate-one">cocoa</span><span className="hero-chocolate chocolate-two">sweet</span><span className="hero-chocolate chocolate-three">love</span><span className="hero-stem stem-one" /><span className="hero-stem stem-two" /><span className="hero-stem stem-three" /></div>}
           <div className="hero-caption"><span>01 / collection</span><span>A little joy, wrapped by hand</span></div>
         </div>
       </section>
@@ -99,10 +87,10 @@ export default function Home() {
 
       <section className="contact-section" id="contact" aria-labelledby="contact-title">
         <div className="contact-heading"><p className="section-label">Order simply</p><h2 id="contact-title">Found the one?</h2></div>
-        <div className="contact-copy"><p>Choose a bouquet from the collection and send a quick enquiry. Your email client will open with the product details ready to review.</p>{orderEmail ? <a className="primary-cta light-cta" href={`mailto:${orderEmail}?subject=${encodeURIComponent("Sweet bouquet enquiry")}`}>Start an enquiry <span aria-hidden="true">↗</span></a> : <p className="contact-note">Our ordering email will be available here soon.</p>}</div>
+        <div className="contact-copy"><p>Choose a bouquet from the collection and send a quick enquiry. Your email client will open with the product details ready to review.</p>{siteConfig.businessEmail ? <><a className="primary-cta light-cta" href={`mailto:${siteConfig.businessEmail}?subject=${encodeURIComponent("Sweet bouquet enquiry")}`}>Start an enquiry <span aria-hidden="true">↗</span></a><p><a href={`mailto:${siteConfig.businessEmail}`}>{siteConfig.businessEmail}</a></p></> : <p className="contact-note">Our ordering email will be available here soon.</p>}{siteConfig.phone && <p><a href={`tel:${siteConfig.phone}`}>{siteConfig.phone}</a></p>}{siteConfig.instagramUrl && <p><a href={siteConfig.instagramUrl} target="_blank" rel="noopener noreferrer">Instagram <span aria-hidden="true">↗</span></a></p>}</div>
       </section>
 
-      <footer className="site-footer"><a className="brand-mark" href="#top"><span className="brand-dot" aria-hidden="true" /><span>Sweet Bouquets</span></a><p>Handmade sweet gifts for meaningful moments.</p><nav aria-label="Footer navigation"><a href="#products">Collection</a><a href="#about">Our approach</a><a href="#contact">Contact</a></nav></footer>
+      <footer className="site-footer"><a className="brand-mark" href="#top"><span className="brand-dot" aria-hidden="true" /><span>Sweet Bouquets</span></a><p>Handmade sweet gifts for meaningful moments.</p><nav aria-label="Footer navigation"><a href="#products">Collection</a><a href="#about">Our approach</a><a href="#contact">Contact</a></nav><div className="footer-contact" aria-label="Contact details">{siteConfig.businessEmail && <a href={`mailto:${siteConfig.businessEmail}`}>{siteConfig.businessEmail}</a>}{siteConfig.phone && <a href={`tel:${siteConfig.phone}`}>{siteConfig.phone}</a>}{siteConfig.instagramUrl && <a href={siteConfig.instagramUrl} target="_blank" rel="noopener noreferrer">Instagram <span aria-hidden="true">↗</span></a>}</div></footer>
     </main>
   );
 }
@@ -112,10 +100,10 @@ function ProductCard({ product, index, onOrder }: { product: Product; index: num
   return (
     <article className="public-product-card">
       <div className="public-product-image">
-        {product.imageUrl && !imageBroken ? <Image src={product.imageUrl} alt={`${product.title} sweet bouquet`} fill sizes="(max-width: 760px) 100vw, (max-width: 1100px) 50vw, 33vw" onError={() => setImageBroken(true)} /> : <div className="image-placeholder" aria-label="Image coming soon"><span aria-hidden="true">SB</span><small>Image coming soon</small></div>}
+        {product.images[0]?.imageUrl && !imageBroken ? <Image src={product.images[0].imageUrl} alt={`${product.title} sweet bouquet`} fill sizes="(max-width: 760px) 100vw, (max-width: 1100px) 50vw, 33vw" onError={() => setImageBroken(true)} /> : <div className="image-placeholder" aria-label="Image coming soon"><span aria-hidden="true">SB</span><small>Image coming soon</small></div>}
         <span className="image-index" aria-hidden="true">{String(index + 1).padStart(2, "0")}</span>
       </div>
-      <div className="public-product-copy"><div className="product-card-meta"><span>Sweet bouquet</span><span>{String(index + 1).padStart(2, "0")}</span></div><h3>{product.title}</h3><p>{product.description}</p><button className="order-button" type="button" onClick={() => onOrder(product)}>Order this bouquet <span aria-hidden="true">↗</span></button></div>
+      <div className="public-product-copy"><div className="product-card-meta"><span>Sweet bouquet</span><span>{product.pricePence === null ? "Price on enquiry" : `£${(product.pricePence / 100).toFixed(2)}`}</span></div><h3>{product.title}</h3><p>{product.description}</p>{product.isAvailable ? <button className="order-button" type="button" onClick={() => onOrder(product)}>Enquire about this bouquet <span aria-hidden="true">↗</span></button> : <p className="contact-note">Currently unavailable</p>}</div>
     </article>
   );
 }

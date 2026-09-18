@@ -193,6 +193,8 @@ For a non-container development setup, copy the example environment files, insta
 
 - `NEXT_PUBLIC_API_URL`
 - `NEXT_PUBLIC_ORDER_EMAIL`
+- `NEXT_PUBLIC_BUSINESS_PHONE`
+- `NEXT_PUBLIC_INSTAGRAM_URL`
 
 Never put `JWT_SECRET`, `SUPABASE_SERVICE_ROLE_KEY`, database credentials, admin passwords, or any other backend secret in a `NEXT_PUBLIC_*` variable. The service-role key is used only by the backend.
 
@@ -235,6 +237,8 @@ Production frontend variables:
 
 - `NEXT_PUBLIC_API_URL`
 - `NEXT_PUBLIC_ORDER_EMAIL`
+- `NEXT_PUBLIC_BUSINESS_PHONE`
+- `NEXT_PUBLIC_INSTAGRAM_URL`
 
 Production backend variables:
 

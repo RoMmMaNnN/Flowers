@@ -2,18 +2,25 @@ export type Product = {
   id: string;
   title: string;
   description: string;
-  imageUrl: string | null;
+  pricePence: number | null;
+  isAvailable: boolean;
   isVisible: boolean;
+  images: ProductImage[];
   sortOrder: number;
   createdAt: string;
   updatedAt: string;
 };
+
+export type ProductImage = { id: string; imageUrl: string; sortOrder: number };
+export type DeleteAllImagesResponse = { product: Product; deletedImageIds: string[]; failed: Array<{ imageId: string; storagePath: string; message: string }> };
 
 type LoginResponse = { accessToken: string };
 type ProductInput = {
   title: string;
   description: string;
   isVisible: boolean;
+  pricePence?: number;
+  isAvailable: boolean;
   sortOrder: number;
 };
 
@@ -102,15 +109,21 @@ export const api = {
   deleteProduct(id: string) {
     return request<Product>(`/products/${id}`, { method: "DELETE" });
   },
-  uploadImage(id: string, file: File) {
+  uploadImages(id: string, files: File[]) {
     const body = new FormData();
-    body.append("image", file);
-    return request<Product>(`/products/${id}/image`, {
+    files.forEach((file) => body.append("images", file));
+    return request<{ product: Product; uploaded: Array<{ fileName: string; imageUrl: string }>; failed: Array<{ fileName: string; message: string }> }>(`/products/${id}/images`, {
       method: "POST",
       body,
     });
   },
-  deleteImage(id: string) {
-    return request<Product>(`/products/${id}/image`, { method: "DELETE" });
+  deleteImage(id: string, imageId: string) {
+    return request<Product>(`/products/${id}/images/${imageId}`, { method: "DELETE" });
+  },
+  deleteAllImages(id: string) {
+    return request<DeleteAllImagesResponse>(`/products/${id}/images`, { method: "DELETE" });
+  },
+  reorderImages(id: string, imageIds: string[]) {
+    return request<Product>(`/products/${id}/images/order`, { method: "PATCH", body: JSON.stringify({ imageIds }) });
   },
 };

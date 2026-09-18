@@ -9,9 +9,11 @@ type ProductForm = {
   description: string;
   sortOrder: string;
   isVisible: boolean;
+  pricePence: string;
+  isAvailable: boolean;
 };
 
-const emptyForm: ProductForm = { title: "", description: "", sortOrder: "0", isVisible: true };
+const emptyForm: ProductForm = { title: "", description: "", sortOrder: "0", isVisible: true, pricePence: "", isAvailable: true };
 
 function productToForm(product: Product): ProductForm {
   return {
@@ -19,6 +21,8 @@ function productToForm(product: Product): ProductForm {
     description: product.description,
     sortOrder: String(product.sortOrder),
     isVisible: product.isVisible,
+    pricePence: product.pricePence === null ? "" : String(product.pricePence),
+    isAvailable: product.isAvailable,
   };
 }
 
@@ -79,9 +83,11 @@ export default function AdminDashboardPage() {
       description: form.description.trim(),
       sortOrder: Number(form.sortOrder),
       isVisible: form.isVisible,
+      pricePence: form.pricePence.trim() === "" ? undefined : Number(form.pricePence),
+      isAvailable: form.isAvailable,
     };
-    if (!input.title || !input.description || !Number.isInteger(input.sortOrder) || input.sortOrder < 0) {
-      setError("Add a title, description, and a whole number sort order.");
+    if (!input.title || !input.description || !Number.isInteger(input.sortOrder) || input.sortOrder < 0 || (input.pricePence !== undefined && (!Number.isInteger(input.pricePence) || input.pricePence < 0))) {
+      setError("Add a title, description, valid sort order, and a non-negative price in pence if needed.");
       setSaving(false);
       return;
     }
@@ -117,15 +123,15 @@ export default function AdminDashboardPage() {
   }
 
   async function handleImageUpload(productId: string, event: ChangeEvent<HTMLInputElement>) {
-    const file = event.target.files?.[0];
+    const files = Array.from(event.target.files ?? []);
     event.target.value = "";
-    if (!file) return;
+    if (!files.length) return;
     setBusyId(productId);
     setError("");
     try {
-      await api.uploadImage(productId, file);
+      const result = await api.uploadImages(productId, files);
       await loadProducts();
-      setNotice("Image uploaded.");
+      setNotice(`${result.uploaded.length} image(s) uploaded${result.failed.length ? `; failed: ${result.failed.map((item) => item.fileName).join(", ")}` : "."}`);
     } catch (requestError) {
       setError(getErrorMessage(requestError));
     } finally {
@@ -133,12 +139,12 @@ export default function AdminDashboardPage() {
     }
   }
 
-  async function handleImageDelete(product: Product) {
-    if (!window.confirm(`Remove the image from “${product.title}”?`)) return;
+  async function handleImageDelete(product: Product, imageId: string) {
+    if (!window.confirm(`Remove this image from “${product.title}”?`)) return;
     setBusyId(product.id);
     setError("");
     try {
-      await api.deleteImage(product.id);
+      await api.deleteImage(product.id, imageId);
       await loadProducts();
       setNotice("Image removed.");
     } catch (requestError) {
@@ -146,6 +152,25 @@ export default function AdminDashboardPage() {
     } finally {
       setBusyId(null);
     }
+  }
+
+  async function handleDeleteAllImages(product: Product) {
+    if (!window.confirm(`Delete all images from “${product.title}”?`)) return;
+    setBusyId(product.id);
+    try {
+      const result = await api.deleteAllImages(product.id);
+      await loadProducts();
+      setNotice(result.failed.length ? `${result.deletedImageIds.length} image(s) removed; ${result.failed.length} could not be removed.` : "All images removed.");
+    } catch (requestError) { setError(getErrorMessage(requestError)); } finally { setBusyId(null); }
+  }
+
+  async function moveImage(product: Product, index: number, direction: -1 | 1) {
+    const target = index + direction;
+    if (target < 0 || target >= product.images.length) return;
+    const imageIds = product.images.map((image) => image.id);
+    [imageIds[index], imageIds[target]] = [imageIds[target], imageIds[index]];
+    setBusyId(product.id);
+    try { await api.reorderImages(product.id, imageIds); await loadProducts(); } catch (requestError) { setError(getErrorMessage(requestError)); } finally { setBusyId(null); }
   }
 
   function logout() {
@@ -183,6 +208,10 @@ export default function AdminDashboardPage() {
             </label>
             <div className="form-row">
               <label>
+                Price (pence)
+                <input type="number" min="0" step="1" value={form.pricePence} onChange={(event) => setForm({ ...form, pricePence: event.target.value })} placeholder="Optional" />
+              </label>
+              <label>
                 Sort order
                 <input type="number" min="0" step="1" value={form.sortOrder} onChange={(event) => setForm({ ...form, sortOrder: event.target.value })} required />
               </label>
@@ -190,6 +219,7 @@ export default function AdminDashboardPage() {
                 <span>Visible publicly</span>
                 <input type="checkbox" checked={form.isVisible} onChange={(event) => setForm({ ...form, isVisible: event.target.checked })} />
               </label>
+              <label className="toggle-label"><span>Available to order</span><input type="checkbox" checked={form.isAvailable} onChange={(event) => setForm({ ...form, isAvailable: event.target.checked })} /></label>
             </div>
             <button className="primary-button" type="submit" disabled={saving}>
               {saving ? "Saving..." : editingId ? "Save changes" : "Create product"}
@@ -216,22 +246,24 @@ export default function AdminDashboardPage() {
               {products.map((product) => (
                 <article className="product-row" key={product.id}>
                   <div className="product-image">
-                    {product.imageUrl ? <img src={product.imageUrl} alt="" /> : <span aria-hidden="true">SB</span>}
+                    {product.images[0] ? <img src={product.images[0].imageUrl} alt="" /> : <span aria-hidden="true">SB</span>}
                   </div>
                   <div className="product-details">
                     <div className="product-title-line">
                       <h3>{product.title}</h3>
                       <span className={product.isVisible ? "status-pill visible" : "status-pill hidden"}>{product.isVisible ? "Visible" : "Hidden"}</span>
+                      <span className={product.isAvailable ? "status-pill visible" : "status-pill hidden"}>{product.isAvailable ? "Available" : "Unavailable"}</span>
                     </div>
                     <p>{product.description}</p>
-                    <small>Sort order {product.sortOrder}</small>
+                    <small>Sort order {product.sortOrder} {product.pricePence === null ? "· Price not set" : `· £${(product.pricePence / 100).toFixed(2)}`}</small>
+                    {product.images.length > 0 && <div className="admin-image-strip">{product.images.map((image, index) => <div className="admin-image-thumb" key={image.id}><img src={image.imageUrl} alt="" /><small>{index === 0 ? "Primary" : `Image ${index + 1}`}</small><button className="text-button" type="button" onClick={() => void moveImage(product, index, -1)} disabled={busyId === product.id || index === 0}>←</button><button className="text-button" type="button" onClick={() => void moveImage(product, index, 1)} disabled={busyId === product.id || index === product.images.length - 1}>→</button><button className="text-button danger-text" type="button" onClick={() => void handleImageDelete(product, image.id)} disabled={busyId === product.id}>Delete</button></div>)}</div>}
                     <div className="row-actions">
                       <button className="text-button" type="button" onClick={() => startEdit(product)}>Edit</button>
                       <label className="text-button file-button">
-                        {busyId === product.id ? "Working..." : product.imageUrl ? "Replace image" : "Add image"}
-                        <input type="file" accept="image/jpeg,image/png,image/webp" onChange={(event) => void handleImageUpload(product.id, event)} disabled={busyId === product.id} />
+                        {busyId === product.id ? "Working..." : "Add images"}
+                        <input type="file" multiple accept="image/jpeg,image/png,image/webp" onChange={(event) => void handleImageUpload(product.id, event)} disabled={busyId === product.id} />
                       </label>
-                      {product.imageUrl && <button className="text-button danger-text" type="button" onClick={() => void handleImageDelete(product)} disabled={busyId === product.id}>Remove image</button>}
+                      {product.images.length > 0 && <button className="text-button danger-text" type="button" onClick={() => void handleDeleteAllImages(product)} disabled={busyId === product.id}>Delete all images</button>}
                       <button className="text-button danger-text" type="button" onClick={() => void handleDelete(product)} disabled={busyId === product.id}>Delete</button>
                     </div>
                   </div>
