@@ -1722,12 +1722,40 @@ button:disabled {
   align-items: start;
   column-gap: clamp(2.5rem, 5vw, 4rem);
   row-gap: 2.5rem;
+  padding-inline: clamp(1.5rem, 3vw, 3rem);
 }
 
 .public-site .footer-brand,
 .public-site .footer-navigation,
 .public-site .footer-contact {
   min-width: 0;
+}
+
+.public-site .footer-contact {
+  display: flex;
+  width: 100%;
+  flex-direction: column;
+  align-items: center;
+  min-width: 0;
+  padding-inline: 1.5rem;
+  text-align: center;
+}
+
+.public-site .footer-contact .footer-label {
+  width: 100%;
+}
+
+.public-site .footer-contact-item {
+  width: 100%;
+  align-items: center;
+  text-align: center;
+}
+
+.public-site .footer-contact-item strong {
+  width: 100%;
+  min-width: 0;
+  overflow-wrap: anywhere;
+  word-break: break-word;
 }
 
 .public-site .footer-navigation {
@@ -1778,7 +1806,7 @@ button:disabled {
 }
 
 .public-site .footer-contact-list {
-  gap: 1rem;
+  gap: 1.25rem;
 }
 
 .public-site .footer-contact-item {
@@ -1799,12 +1827,9 @@ button:disabled {
 }
 
 .public-site .footer-contact-item strong {
-  max-width: 100%;
   color: var(--public-ink);
   font-size: 0.8rem;
   font-weight: 400;
-  overflow-wrap: anywhere;
-  word-break: break-word;
 }
 
 .public-site .footer-contact-item:hover {
