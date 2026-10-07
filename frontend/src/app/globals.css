@@ -460,7 +460,6 @@ button:disabled {
 
 .site-header,
 .hero-section,
-.intro-band,
 .catalogue-section,
 .contact-section,
 .site-footer {
@@ -628,15 +627,6 @@ button:disabled {
   color: #e4b46e;
 }
 
-.intro-band {
-  display: grid;
-  grid-template-columns: minmax(10rem, 0.7fr) minmax(0, 1.3fr);
-  gap: 3rem;
-  border-top: 1px solid #e9dccd;
-  border-bottom: 1px solid #e9dccd;
-  padding: 5rem 0;
-}
-
 .section-label {
   margin: 0;
   color: #a85d4e;
@@ -647,7 +637,6 @@ button:disabled {
   text-transform: uppercase;
 }
 
-.intro-band h2,
 .catalogue-section h2,
 .contact-section h2 {
   max-width: 14ch;
@@ -657,14 +646,6 @@ button:disabled {
   font-weight: 400;
   letter-spacing: 0;
   line-height: 0.98;
-}
-
-.intro-band p:not(.section-label) {
-  max-width: 39rem;
-  margin: 1.5rem 0 0;
-  color: var(--muted);
-  font-family: Arial, sans-serif;
-  line-height: 1.7;
 }
 
 .catalogue-section {
@@ -852,7 +833,6 @@ button:disabled {
 @media (max-width: 760px) {
   .site-header,
   .hero-section,
-  .intro-band,
   .catalogue-section,
   .contact-section,
   .site-footer {
@@ -889,7 +869,6 @@ button:disabled {
   }
 
   .hero-section,
-  .intro-band,
   .contact-section {
     grid-template-columns: 1fr;
   }
@@ -908,7 +887,6 @@ button:disabled {
     min-height: 25rem;
   }
 
-  .intro-band,
   .catalogue-section {
     padding: 4rem 0;
   }
@@ -1203,31 +1181,10 @@ button:disabled {
   color: #e4b46e;
 }
 
-.public-site .intro-band {
-  width: min(100% - 3rem, 80rem);
-  grid-template-columns: minmax(8rem, 0.48fr) minmax(0, 1.52fr);
-  gap: 2rem;
-  border-color: var(--public-line);
-  padding: clamp(4rem, 8vw, 7rem) 0;
-}
-
-.public-site .intro-content {
-  max-width: 56rem;
-}
-
-.public-site .intro-band h2,
 .public-site .catalogue-section h2,
 .public-site .contactSection h2,
 .public-site .contact-section h2 {
   color: var(--public-green);
-}
-
-.public-site .intro-band p:not(.section-label) {
-  max-width: 40rem;
-  margin-top: 1.3rem;
-  color: #60736d;
-  font-size: 1rem;
-  line-height: 1.7;
 }
 
 .public-site .section-label {
@@ -1242,6 +1199,10 @@ button:disabled {
 .public-site .public-heading {
   align-items: end;
   margin-bottom: 2.8rem;
+}
+
+.public-site .public-heading h2 {
+  margin-top: 0.9rem;
 }
 
 .public-site .section-aside {
@@ -1748,6 +1709,7 @@ button:disabled {
 }
 
 .public-site .site-footer {
+  display: block;
   width: 100%;
   padding: clamp(3.5rem, 7vw, 5.5rem) 0 2rem;
 }
@@ -1768,6 +1730,10 @@ button:disabled {
   min-width: 0;
 }
 
+.public-site .footer-navigation {
+  display: block;
+}
+
 .public-site .footer-brand p {
   margin: 0;
   max-width: 17rem;
@@ -1776,6 +1742,7 @@ button:disabled {
   font-family: Arial, sans-serif;
   font-size: 0.82rem;
   line-height: 1.6;
+  text-wrap: balance;
 }
 
 .public-site .footer-label {
@@ -1800,6 +1767,7 @@ button:disabled {
   color: var(--public-ink);
   font-family: Arial, sans-serif;
   font-size: 0.8rem;
+  white-space: nowrap;
   text-decoration: none;
   transition: color 180ms ease, transform 180ms ease;
 }
@@ -1896,7 +1864,6 @@ button:disabled {
 @media (max-width: 760px) {
   .public-site .site-header,
   .public-site .hero-section,
-  .public-site .intro-band,
   .public-site .catalogue-section {
     width: min(100% - 2rem, 40rem);
   }
@@ -1944,12 +1911,6 @@ button:disabled {
   .public-site .hero-art {
     min-height: 23rem;
     box-shadow: 0.65rem 0.65rem 0 #e8d8c5;
-  }
-
-  .public-site .intro-band {
-    grid-template-columns: 1fr;
-    gap: 1.5rem;
-    padding: 4rem 0;
   }
 
   .public-site .catalogue-section {
