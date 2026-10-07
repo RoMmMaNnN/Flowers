@@ -1298,12 +1298,87 @@ button:disabled {
   color: #665c57;
 }
 
-.public-site .product-price {
+.public-site .product-price-block {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  padding: 0.75rem 0.8rem;
+  border: 1px solid rgba(49, 93, 87, 0.12);
+  border-radius: 0.3rem;
+  background: rgba(49, 93, 87, 0.03);
+}
+
+.public-site .product-price-label {
+  color: #7d7067;
+  font-family: Arial, sans-serif;
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.public-site .product-price-value {
   color: var(--public-green);
   font-family: Arial, sans-serif;
   font-size: 1.1rem;
   font-weight: 700;
   letter-spacing: 0.02em;
+}
+
+.public-site .product-quantity {
+  display: grid;
+  gap: 0.45rem;
+}
+
+.public-site .product-quantity-label {
+  color: #7d7067;
+  font-family: Arial, sans-serif;
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.public-site .quantity-control {
+  display: grid;
+  grid-template-columns: 2.25rem minmax(0, 1fr) 2.25rem;
+  align-items: center;
+  overflow: hidden;
+  border: 1px solid var(--public-line);
+  border-radius: 0.35rem;
+  background: #fffaf4;
+}
+
+.public-site .quantity-button {
+  display: grid;
+  place-items: center;
+  width: 100%;
+  height: 2.75rem;
+  border: 0;
+  background: transparent;
+  color: var(--public-green);
+  font-size: 1.5rem;
+  line-height: 1;
+}
+
+.public-site .quantity-button:disabled {
+  cursor: not-allowed;
+  color: #a69a90;
+}
+
+.public-site .quantity-input {
+  width: 100%;
+  border: 0;
+  background: transparent;
+  color: var(--public-green);
+  font-family: Arial, sans-serif;
+  font-size: 1rem;
+  font-weight: 700;
+  text-align: center;
+}
+
+.public-site .quantity-input:focus {
+  outline: none;
 }
 
 .public-site .order-button {
@@ -1457,6 +1532,14 @@ button:disabled {
   font-family: Arial, sans-serif;
   font-size: 0.83rem;
   overflow-wrap: anywhere;
+}
+
+.public-site .contactMeta {
+  color: rgba(255, 250, 244, 0.8);
+  font-family: Arial, sans-serif;
+  font-size: 0.68rem;
+  letter-spacing: 0.08em;
+  text-transform: lowercase;
 }
 
 .public-site .contactCta,
