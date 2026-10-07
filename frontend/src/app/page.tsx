@@ -11,6 +11,7 @@ export default function Home() {
   const [error, setError] = useState("");
   const [menuOpen, setMenuOpen] = useState(false);
   const [orderMessage, setOrderMessage] = useState("");
+  const [heroImageBroken, setHeroImageBroken] = useState(false);
 
   useEffect(() => {
     let isCurrent = true;
@@ -68,17 +69,9 @@ export default function Home() {
         </div>
         <div className="hero-art" aria-label="A selection of sweet bouquet treats">
           <div className="hero-art-visual">
-            {products[0]?.images[0]?.imageUrl ? <Image src={products[0].images[0].imageUrl} alt="" fill priority sizes="(max-width: 760px) 100vw, 47vw" /> : <div className="hero-still-life" aria-hidden="true"><span className="hero-ribbon">made to be remembered</span><span className="hero-chocolate chocolate-one">cocoa</span><span className="hero-chocolate chocolate-two">sweet</span><span className="hero-chocolate chocolate-three">love</span></div>}
+            {products[0]?.images[0]?.imageUrl && !heroImageBroken ? <Image src={products[0].images[0].imageUrl} alt="" fill priority sizes="(max-width: 760px) 100vw, 47vw" onError={() => setHeroImageBroken(true)} /> : <div className="hero-image-fallback" aria-hidden="true" />}
           </div>
-          <div className="hero-art-decor" aria-hidden="true">
-            <span className="hero-ribbon">made to be remembered</span>
-            <span className="hero-chocolate chocolate-one">cocoa</span>
-            <span className="hero-chocolate chocolate-two">sweet</span>
-            <span className="hero-chocolate chocolate-three">love</span>
-            <span className="hero-stem stem-one" />
-            <span className="hero-stem stem-two" />
-            <span className="hero-stem stem-three" />
-          </div>
+          <span className="hero-editorial-label">Made to be remembered</span>
           <div className="hero-caption"><span>01 / collection</span><span>A little joy, wrapped by hand</span></div>
         </div>
       </section>

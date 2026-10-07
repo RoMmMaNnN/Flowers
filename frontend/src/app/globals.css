@@ -608,60 +608,6 @@ button:disabled {
   object-fit: cover;
 }
 
-.hero-still-life {
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(135deg, #d9e5dc 0 50%, #b9cec2 50% 100%);
-}
-
-.hero-ribbon {
-  position: absolute;
-  top: 18%;
-  left: 12%;
-  z-index: 1;
-  color: #315d57;
-  font-family: Arial, sans-serif;
-  font-size: 0.72rem;
-  font-weight: 700;
-  letter-spacing: 0.18em;
-  text-transform: uppercase;
-  transform: rotate(-8deg);
-}
-
-.hero-chocolate {
-  position: absolute;
-  display: grid;
-  width: 8rem;
-  height: 8rem;
-  place-items: center;
-  border: 0.7rem solid rgba(255, 250, 244, 0.75);
-  border-radius: 50%;
-  background: #6e3e2d;
-  color: #f7dfbf;
-  font-family: Georgia, serif;
-  font-size: 1.2rem;
-  font-style: italic;
-  box-shadow: 0 1.5rem 2rem rgba(61, 61, 47, 0.18);
-}
-
-.chocolate-one { top: 30%; left: 14%; }
-.chocolate-two { top: 15%; right: 12%; background: #a85d4e; transform: scale(0.72); }
-.chocolate-three { right: 17%; bottom: 13%; background: #b48b50; transform: scale(0.9); }
-
-.hero-stem {
-  position: absolute;
-  bottom: -8%;
-  left: 50%;
-  width: 0.25rem;
-  height: 75%;
-  background: #315d57;
-  transform-origin: bottom;
-}
-
-.stem-one { transform: rotate(-29deg); }
-.stem-two { transform: rotate(4deg); }
-.stem-three { transform: rotate(27deg); }
-
 .hero-caption {
   position: absolute;
   right: 0;
@@ -1196,7 +1142,7 @@ button:disabled {
   min-height: min(34rem, 67vh);
   overflow: hidden;
   border-radius: 0.2rem;
-  background: linear-gradient(135deg, #dfeadf 0%, #cddfc9 100%);
+  background: #dde5dd;
   box-shadow: 0.9rem 0.9rem 0 #e8d8c5;
 }
 
@@ -1210,63 +1156,30 @@ button:disabled {
   object-fit: cover;
 }
 
-.public-site .hero-art-decor {
+.public-site .hero-image-fallback {
   position: absolute;
   inset: 0;
-  z-index: 1;
-  pointer-events: none;
+  background: #dde5dd;
 }
 
-.public-site .hero-ribbon {
+.public-site .hero-editorial-label {
   position: absolute;
   top: 12%;
   left: 12%;
-  z-index: 3;
+  z-index: 2;
   display: inline-flex;
   padding: 0.5rem 0.7rem;
-  border: 1px solid rgba(49, 93, 87, 0.18);
-  background: rgba(255, 250, 244, 0.72);
-  color: #315d57;
+  border: 1px solid rgba(255, 250, 244, 0.3);
+  border-radius: 0.15rem;
+  background: rgba(38, 63, 59, 0.64);
+  color: #fffaf4;
   font-family: Arial, sans-serif;
   font-size: 0.68rem;
   font-weight: 700;
   letter-spacing: 0.16em;
   text-transform: uppercase;
-  transform: rotate(-8deg);
+  text-shadow: 0 1px 0 rgba(0, 0, 0, 0.15);
 }
-
-.public-site .hero-chocolate {
-  position: absolute;
-  display: grid;
-  place-items: center;
-  width: 7.7rem;
-  height: 7.7rem;
-  border: 0.7rem solid rgba(255, 250, 244, 0.72);
-  border-radius: 50%;
-  background: #6e3e2d;
-  color: #f7dfbf;
-  font-family: Georgia, serif;
-  font-size: 1.15rem;
-  font-style: italic;
-  box-shadow: 0 1rem 1.5rem rgba(53, 35, 28, 0.14);
-}
-
-.chocolate-one { left: 14%; bottom: 22%; }
-.chocolate-two { right: 12%; top: 12%; background: #a85d4e; transform: scale(0.82); }
-.chocolate-three { right: 18%; bottom: 16%; background: #b48b50; transform: scale(0.9); }
-
-.hero-stem {
-  position: absolute;
-  bottom: -10%;
-  width: 0.28rem;
-  border-radius: 999px;
-  background: rgba(49, 93, 87, 0.82);
-  transform-origin: bottom center;
-}
-
-.stem-one { left: 30%; height: 58%; transform: rotate(-26deg); }
-.stem-two { left: 50%; height: 62%; transform: rotate(7deg); }
-.stem-three { right: 25%; height: 48%; transform: rotate(25deg); }
 
 .public-site .hero-caption {
   position: absolute;
