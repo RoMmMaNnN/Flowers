@@ -47,8 +47,9 @@ export default function Home() {
           <span>{menuOpen ? "Close" : "Menu"}</span>
         </button>
         <nav id="site-navigation" className={menuOpen ? "site-nav open" : "site-nav"} aria-label="Main navigation">
-          <a href="#products" onClick={closeMenu}>Collection</a>
+          <a href="#top" onClick={closeMenu}>Home</a>
           <a href="#about" onClick={closeMenu}>Our approach</a>
+          <a href="#products" onClick={closeMenu}>Collection</a>
           <a href="#contact" onClick={closeMenu}>Contact</a>
           <a className="nav-cta" href="#contact" onClick={closeMenu}>Make an enquiry <span aria-hidden="true">↗</span></a>
         </nav>
@@ -66,7 +67,18 @@ export default function Home() {
           <div className="hero-note"><span aria-hidden="true">✦</span><span>Made for birthdays, thank-yous, and just because.</span></div>
         </div>
         <div className="hero-art" aria-label="A selection of sweet bouquet treats">
-          {products[0]?.images[0]?.imageUrl ? <Image src={products[0].images[0].imageUrl} alt="" fill priority sizes="(max-width: 760px) 100vw, 47vw" /> : <div className="hero-still-life" aria-hidden="true"><span className="hero-ribbon">made to be remembered</span><span className="hero-chocolate chocolate-one">cocoa</span><span className="hero-chocolate chocolate-two">sweet</span><span className="hero-chocolate chocolate-three">love</span><span className="hero-stem stem-one" /><span className="hero-stem stem-two" /><span className="hero-stem stem-three" /></div>}
+          <div className="hero-art-visual">
+            {products[0]?.images[0]?.imageUrl ? <Image src={products[0].images[0].imageUrl} alt="" fill priority sizes="(max-width: 760px) 100vw, 47vw" /> : <div className="hero-still-life" aria-hidden="true"><span className="hero-ribbon">made to be remembered</span><span className="hero-chocolate chocolate-one">cocoa</span><span className="hero-chocolate chocolate-two">sweet</span><span className="hero-chocolate chocolate-three">love</span></div>}
+          </div>
+          <div className="hero-art-decor" aria-hidden="true">
+            <span className="hero-ribbon">made to be remembered</span>
+            <span className="hero-chocolate chocolate-one">cocoa</span>
+            <span className="hero-chocolate chocolate-two">sweet</span>
+            <span className="hero-chocolate chocolate-three">love</span>
+            <span className="hero-stem stem-one" />
+            <span className="hero-stem stem-two" />
+            <span className="hero-stem stem-three" />
+          </div>
           <div className="hero-caption"><span>01 / collection</span><span>A little joy, wrapped by hand</span></div>
         </div>
       </section>
@@ -77,7 +89,7 @@ export default function Home() {
       </section>
 
       <section className="catalogue-section" id="products" aria-labelledby="products-title">
-        <div className="section-heading public-heading"><div><p className="section-label">The collection</p><h2 id="products-title">Choose a little sweetness.</h2></div><p className="section-aside">Scroll the collection, then tell us which one caught your eye.</p></div>
+        <div className="section-heading public-heading"><div><p className="section-label">The collection</p><h2 id="products-title">Choose a little sweetness.</h2></div><p className="section-aside">Browse the handcrafted bouquets and pick your favourite.</p></div>
         {isLoading && <div className="catalogue-message" role="status">Gathering the collection...</div>}
         {error && <div className="catalogue-message error-message" role="alert">{error}</div>}
         {!isLoading && !error && products.length === 0 && <div className="catalogue-message">New bouquets are being prepared. Please check back soon.</div>}
@@ -86,55 +98,73 @@ export default function Home() {
       </section>
 
       <section className="contactSection" id="contact" aria-labelledby="contact-title">
-        <div className="contactHeader">
-          <p className="section-label">Order simply</p>
-          <h2 id="contact-title">Contact</h2>
-          <p className="contactIntro">Have a question or found a favourite? Email us to enquire about a bouquet, check availability, or arrange a thoughtful gift.</p>
-        </div>
-
-        <div className="contactContent">
-          <div className="contactGrid">
-            {siteConfig.phone && (
-              <a className="contactCard" href={whatsAppHref(siteConfig.phone)} target="_blank" rel="noopener noreferrer" aria-label="Contact Sweet Bouquets on WhatsApp">
-                <ContactIcon type="whatsapp" />
-                <span className="contactContentBlock">
-                  <span className="contactLabel">WhatsApp</span>
-                  <span className="contactValue">{formatPhoneForDisplay(siteConfig.phone)}</span>
-                  <span className="contactMeta">{siteConfig.whatsappDisplayName}</span>
-                </span>
-              </a>
-            )}
-            {siteConfig.businessEmail && (
-              <a className="contactCard" href={`mailto:${siteConfig.businessEmail}`} aria-label="Email Sweet Bouquets">
-                <ContactIcon type="email" />
-                <span className="contactContentBlock">
-                  <span className="contactLabel">Email</span>
-                  <span className="contactValue">{siteConfig.businessEmail}</span>
-                </span>
-              </a>
-            )}
-            {siteConfig.instagramUrl && (
-              <a className="contactCard" href={siteConfig.instagramUrl} target="_blank" rel="noopener noreferrer" aria-label="Visit Sweet Bouquets on Instagram">
-                <ContactIcon type="instagram" />
-                <span className="contactContentBlock">
-                  <span className="contactLabel">Instagram</span>
-                  <span className="contactValue">@Belfastsweetpresentsforeveryone</span>
-                </span>
-              </a>
-            )}
+        <div className="contactSectionInner">
+          <div className="contactHeader">
+            <p className="section-label">Order simply</p>
+            <h2 id="contact-title">Contact</h2>
+            <p className="contactIntro">Have a question or found a favourite? Email us to enquire about a bouquet, check availability, or arrange a thoughtful gift.</p>
           </div>
 
-          {siteConfig.businessEmail ? (
-            <a className="contactCta" href={`mailto:${siteConfig.businessEmail}?subject=${encodeURIComponent("Sweet bouquet enquiry")}`}>
-              Start an enquiry <span aria-hidden="true">↗</span>
-            </a>
-          ) : (
-            <p className="contactNote">Our ordering email will be available here soon.</p>
-          )}
+          <div className="contactContent">
+            <div className="contactGrid">
+              {siteConfig.phone && (
+                <a className="contactCard" href={whatsAppHref(siteConfig.phone)} target="_blank" rel="noopener noreferrer" aria-label="Contact Sweet Bouquets on WhatsApp">
+                  <ContactIcon type="whatsapp" />
+                  <span className="contactContentBlock">
+                    <span className="contactLabel">WhatsApp</span>
+                    <span className="contactValue">{formatPhoneForDisplay(siteConfig.phone)}</span>
+                    <span className="contactMeta">{siteConfig.whatsappDisplayName}</span>
+                  </span>
+                </a>
+              )}
+              {siteConfig.businessEmail && (
+                <a className="contactCard" href={`mailto:${siteConfig.businessEmail}`} aria-label="Email Sweet Bouquets">
+                  <ContactIcon type="email" />
+                  <span className="contactContentBlock">
+                    <span className="contactLabel">Email</span>
+                    <span className="contactValue">{siteConfig.businessEmail}</span>
+                  </span>
+                </a>
+              )}
+              {siteConfig.instagramUrl && (
+                <a className="contactCard" href={siteConfig.instagramUrl} target="_blank" rel="noopener noreferrer" aria-label="Visit Sweet Bouquets on Instagram">
+                  <ContactIcon type="instagram" />
+                  <span className="contactContentBlock">
+                    <span className="contactLabel">Instagram</span>
+                    <span className="contactValue">@Belfastsweetpresentsforeveryone</span>
+                  </span>
+                </a>
+              )}
+            </div>
+
+            {siteConfig.businessEmail ? (
+              <a className="contactCta" href={`mailto:${siteConfig.businessEmail}?subject=${encodeURIComponent("Sweet bouquet enquiry")}`}>
+                Start an enquiry <span aria-hidden="true">↗</span>
+              </a>
+            ) : (
+              <p className="contactNote">Our ordering email will be available here soon.</p>
+            )}
+          </div>
         </div>
       </section>
 
-      <footer className="site-footer"><a className="brand-mark" href="#top"><span className="brand-dot" aria-hidden="true" /><span>Sweet Bouquets</span></a><p>Handmade sweet gifts for meaningful moments.</p><nav aria-label="Footer navigation"><a href="#products">Collection</a><a href="#about">Our approach</a><a href="#contact">Contact</a></nav><div className="footer-contact" aria-label="Contact details">{siteConfig.businessEmail && <a href={`mailto:${siteConfig.businessEmail}`}>{siteConfig.businessEmail}</a>}{siteConfig.phone && <a href={phoneHref(siteConfig.phone)}>{formatPhoneForDisplay(siteConfig.phone)}</a>}{siteConfig.instagramUrl && <a href={siteConfig.instagramUrl} target="_blank" rel="noopener noreferrer">Instagram <span aria-hidden="true">↗</span></a>}</div></footer>
+      <footer className="site-footer">
+        <div className="site-footer-inner">
+          <a className="brand-mark" href="#top"><span className="brand-dot" aria-hidden="true" /><span>Sweet Bouquets</span></a>
+          <p>Handmade sweet gifts for meaningful moments.</p>
+          <nav aria-label="Footer navigation">
+            <a href="#top">Home</a>
+            <a href="#about">Our approach</a>
+            <a href="#products">Collection</a>
+            <a href="#contact">Contact</a>
+          </nav>
+          <div className="footer-contact" aria-label="Contact details">
+            {siteConfig.businessEmail && <a href={`mailto:${siteConfig.businessEmail}`}>{siteConfig.businessEmail}</a>}
+            {siteConfig.phone && <a href={phoneHref(siteConfig.phone)}>{formatPhoneForDisplay(siteConfig.phone)}</a>}
+            {siteConfig.instagramUrl && <a href={siteConfig.instagramUrl} target="_blank" rel="noopener noreferrer">Instagram <span aria-hidden="true">↗</span></a>}
+          </div>
+        </div>
+      </footer>
     </main>
   );
 }
