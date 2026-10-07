@@ -2,8 +2,8 @@ export const siteConfig = {
   businessEmail: process.env.NEXT_PUBLIC_ORDER_EMAIL?.trim() ?? "treaty.bloom@gmail.com",
   phone: process.env.NEXT_PUBLIC_BUSINESS_PHONE?.trim() ?? "447795272359",
   instagramUrl: process.env.NEXT_PUBLIC_INSTAGRAM_URL?.trim() ?? "https://www.instagram.com/treaty.bloom/",
-  instagramDisplayName: process.env.NEXT_PUBLIC_INSTAGRAM_NAME?.trim() ??"treaty.bloom",
-  whatsappDisplayName: process.env.NEXT_PUBLIC_WHATSAPP_NAME?.trim() ??"treaty.bloom",
+  instagramDisplayName: process.env.NEXT_PUBLIC_INSTAGRAM_NAME?.trim() ?? "treaty.bloom",
+  whatsappDisplayName: process.env.NEXT_PUBLIC_WHATSAPP_NAME?.trim() ?? "treaty.bloom",
 };
 
 export function normalizePhoneNumber(phone: string) {
