@@ -2,12 +2,22 @@ import { ConfigService } from "@nestjs/config";
 import { ValidationPipe } from "@nestjs/common";
 import { NestFactory } from "@nestjs/core";
 import { DocumentBuilder, SwaggerModule } from "@nestjs/swagger";
+import type { CustomOrigin } from "@nestjs/common/interfaces/external/cors-options.interface";
 import { AppModule } from "./app.module";
 import { AuthService } from "./auth/auth.service";
+import { GlobalExceptionFilter } from "./common/global-exception.filter";
+import { HttpLoggingInterceptor } from "./common/http-logging.interceptor";
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   const configService = app.get(ConfigService);
+
+  const allowedOrigins = [
+    configService.get<string>("FRONTEND_URL") ?? "http://localhost:3000",
+    ...(configService.get<string>("FRONTEND_URLS")?.split(",") ?? []),
+  ]
+    .map((origin) => origin?.trim().replace(/\/$/, ""))
+    .filter((origin): origin is string => Boolean(origin));
 
   app.useGlobalPipes(
     new ValidationPipe({
@@ -16,6 +26,8 @@ async function bootstrap() {
       forbidNonWhitelisted: true,
     }),
   );
+  app.useGlobalInterceptors(new HttpLoggingInterceptor());
+  app.useGlobalFilters(new GlobalExceptionFilter());
 
   const swaggerConfig = new DocumentBuilder()
     .setTitle("Sweet Bouquets API")
@@ -26,8 +38,16 @@ async function bootstrap() {
   const document = SwaggerModule.createDocument(app, swaggerConfig);
   SwaggerModule.setup("api", app, document);
 
+  const corsOrigin: CustomOrigin = (requestOrigin, callback) => {
+    if (!requestOrigin || allowedOrigins.includes(requestOrigin)) {
+      callback(null, requestOrigin ?? false);
+      return;
+    }
+    callback(new Error("Origin is not allowed by CORS"), false);
+  };
+
   app.enableCors({
-    origin: configService.get<string>("FRONTEND_URL") ?? "http://localhost:3000",
+    origin: corsOrigin,
   });
 
   await app.init();

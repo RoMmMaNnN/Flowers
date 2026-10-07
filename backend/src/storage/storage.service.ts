@@ -43,6 +43,10 @@ export class StorageService {
   }
 
   async uploadImage(file: Express.Multer.File): Promise<StoredImage> {
+    this.log("storage.image.processing.started", {
+      mimeType: file.mimetype,
+      sizeBytes: file.size,
+    });
     let processedImage: Buffer;
     try {
       processedImage = await sharp(file.buffer)
@@ -55,11 +59,16 @@ export class StorageService {
         })
         .webp({ quality: WEBP_QUALITY })
         .toBuffer();
-    } catch {
+    } catch (error) {
+      this.logError("storage.image.processing.failed", error, {
+        mimeType: file.mimetype,
+        sizeBytes: file.size,
+      });
       throw new BadRequestException("Uploaded file is not a valid image");
     }
 
     const path = `products/${randomUUID()}.webp`;
+    this.log("storage.image.upload.started", { path, sizeBytes: processedImage.length });
     const { error } = await this.client.storage
       .from(this.bucket)
       .upload(path, processedImage, {
@@ -68,26 +77,55 @@ export class StorageService {
       });
 
     if (error) {
-      this.logger.error("Supabase image upload failed");
+      this.logError("storage.image.upload.failed", error, { path });
       throw new InternalServerErrorException("Image storage is unavailable");
     }
 
     const { data } = this.client.storage.from(this.bucket).getPublicUrl(path);
+    if (!data.publicUrl) {
+      const error = new Error("Supabase returned an empty public image URL");
+      this.logError("storage.image.url.failed", error, { path });
+      throw new InternalServerErrorException("Image URL could not be created");
+    }
+    this.log("storage.image.upload.completed", { path, publicUrl: data.publicUrl });
     return { path, publicUrl: data.publicUrl };
   }
 
   async deleteImage(imageUrlOrPath: string): Promise<void> {
     const path = this.getStoragePath(imageUrlOrPath);
     if (!path) {
+      this.logger.warn(`storage.image.delete.skipped invalid path: ${this.redactUrl(imageUrlOrPath)}`);
       return;
     }
 
+    this.log("storage.image.delete.started", { path });
     const { error } = await this.client.storage
       .from(this.bucket)
       .remove([path]);
     if (error) {
-      this.logger.error("Supabase image deletion failed");
+      this.logError("storage.image.delete.failed", error, { path });
       throw new InternalServerErrorException("Image storage is unavailable");
+    }
+    this.log("storage.image.delete.completed", { path });
+  }
+
+  private log(event: string, details: Record<string, unknown>) {
+    this.logger.log(JSON.stringify({ event, ...details }));
+  }
+
+  private logError(event: string, error: unknown, details: Record<string, unknown>) {
+    this.logger.error(
+      JSON.stringify({ event, ...details, error: error instanceof Error ? error.message : String(error) }),
+      error instanceof Error ? error.stack : undefined,
+    );
+  }
+
+  private redactUrl(value: string) {
+    try {
+      const url = new URL(value);
+      return `${url.origin}${url.pathname}`;
+    } catch {
+      return value.slice(0, 160);
     }
   }
 

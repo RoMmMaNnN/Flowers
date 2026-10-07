@@ -22,7 +22,15 @@ export class ProductsService {
   ) {}
 
   create(data: CreateProductDto) {
-    return this.prisma.product.create({ data, include: this.imageInclude });
+    this.log("listing.create.started", {
+      title: data.title,
+      pricePence: data.pricePence ?? null,
+      isAvailable: data.isAvailable ?? true,
+    });
+    return this.prisma.product.create({ data, include: this.imageInclude }).then((product) => {
+      this.log("listing.create.completed", { listingId: product.id, pricePence: product.pricePence });
+      return product;
+    });
   }
 
   findAll(includeHidden = false) {
@@ -30,6 +38,9 @@ export class ProductsService {
       ...(includeHidden ? {} : { where: { isVisible: true } }),
       orderBy: [{ sortOrder: "asc" }, { createdAt: "desc" }],
       include: this.imageInclude,
+    }).then((products) => {
+      this.log("listing.collection.completed", { includeHidden, listingCount: products.length, imageCount: products.reduce((count, product) => count + product.images.length, 0) });
+      return products;
     });
   }
 
@@ -38,6 +49,7 @@ export class ProductsService {
   }
 
   async findOne(id: string, includeHidden = true) {
+    this.log("listing.read.started", { listingId: id, includeHidden });
     const product = await this.prisma.product.findUnique({
       where: includeHidden ? { id } : { id, isVisible: true },
       include: this.imageInclude,
@@ -45,24 +57,34 @@ export class ProductsService {
     if (!product) {
       throw new NotFoundException(`Product with id '${id}' not found`);
     }
+    this.log("listing.read.completed", { listingId: id, imageCount: product.images.length });
     return product;
   }
 
   async update(id: string, data: UpdateProductDto) {
+    this.log("listing.update.started", {
+      listingId: id,
+      fields: Object.keys(data),
+      pricePence: data.pricePence ?? null,
+    });
     await this.findOne(id);
     try {
-      return await this.prisma.product.update({
+      const product = await this.prisma.product.update({
         where: { id },
         data: data as Prisma.ProductUpdateInput,
         include: this.imageInclude,
       });
+      this.log("listing.update.completed", { listingId: id, pricePence: product.pricePence, imageCount: product.images.length });
+      return product;
     } catch (error) {
+      this.logError("listing.update.failed", error, { listingId: id });
       this.throwNotFoundForMissingProduct(error, id);
       throw error;
     }
   }
 
   async remove(id: string) {
+    this.log("listing.delete.started", { listingId: id });
     const product = await this.findOne(id);
     for (const image of product.images) {
       try {
@@ -84,6 +106,7 @@ export class ProductsService {
   }
 
   async uploadImages(id: string, files: Express.Multer.File[]) {
+    this.log("listing.images.upload.started", { listingId: id, fileCount: files.length });
     const product = await this.findOne(id);
     const uploaded: Array<{ fileName: string; imageUrl: string }> = [];
     const failed: Array<{ fileName: string; message: string }> = [];
@@ -92,9 +115,12 @@ export class ProductsService {
       let storedImage: { path: string; publicUrl: string } | undefined;
       try {
         storedImage = await this.storage.uploadImage(file);
+        this.log("listing.image.storage.completed", { listingId: id, path: storedImage.path, publicUrl: storedImage.publicUrl });
         await this.createImageRecordSerialised(id, storedImage);
+        this.log("listing.image.database.completed", { listingId: id, path: storedImage.path });
         uploaded.push({ fileName: file.originalname, imageUrl: storedImage.publicUrl });
       } catch (error) {
+        this.logError("listing.image.upload.failed", error, { listingId: id, path: storedImage?.path });
         if (storedImage) {
           try {
             await this.storage.deleteImage(storedImage.path);
@@ -112,6 +138,7 @@ export class ProductsService {
   }
 
   async deleteImage(id: string, imageId: string) {
+    this.log("listing.image.delete.started", { listingId: id, imageId });
     const product = await this.findOne(id);
     const image = product.images.find((candidate) => candidate.id === imageId);
     if (!image) {
@@ -121,21 +148,24 @@ export class ProductsService {
     try {
       await this.storage.deleteImage(image.storagePath);
     } catch (error) {
+      this.logError("listing.image.delete.storage.failed", error, { listingId: id, imageId, path: image.storagePath });
       throw new InternalServerErrorException("Image was not deleted because storage cleanup failed", { cause: error });
     }
 
     try {
       await this.prisma.productImage.delete({ where: { id: imageId } });
     } catch (error) {
-      this.logger.error(`Image database deletion failed after storage cleanup for ${image.storagePath}`);
+      this.logError("listing.image.delete.database.failed", error, { listingId: id, imageId, path: image.storagePath });
       throw new InternalServerErrorException("Image storage was deleted but its database record remains; reconcile before retrying", { cause: error });
     }
 
     await this.normalizeImageOrder(id);
+    this.log("listing.image.delete.completed", { listingId: id, imageId });
     return this.findOne(id);
   }
 
   async deleteAllImages(id: string) {
+    this.log("listing.images.delete_all.started", { listingId: id });
     const product = await this.findOne(id);
     const deletedImageIds: string[] = [];
     const failed: Array<{ imageId: string; storagePath: string; message: string }> = [];
@@ -160,10 +190,12 @@ export class ProductsService {
     if (deletedImageIds.length) {
       await this.normalizeImageOrder(id);
     }
+    this.log("listing.images.delete_all.completed", { listingId: id, deletedCount: deletedImageIds.length, failedCount: failed.length });
     return { product: await this.findOne(id), deletedImageIds, failed };
   }
 
   async reorderImages(id: string, imageIds: string[]) {
+    this.log("listing.images.reorder.started", { listingId: id, imageCount: imageIds?.length });
     this.assertValidImageOrderInput(imageIds);
     const product = await this.findOne(id);
     if (imageIds.length !== product.images.length || new Set(imageIds).size !== imageIds.length || imageIds.some((imageId) => !product.images.some((image) => image.id === imageId))) {
@@ -176,6 +208,7 @@ export class ProductsService {
       await Promise.all(imageIds.map((imageId, index) => transaction.productImage.update({ where: { id: imageId }, data: { sortOrder: temporaryOffset + index } })));
       await Promise.all(imageIds.map((imageId, index) => transaction.productImage.update({ where: { id: imageId }, data: { sortOrder: index } })));
     });
+    this.log("listing.images.reorder.completed", { listingId: id, imageCount: imageIds.length });
     return this.findOne(id);
   }
 
@@ -205,6 +238,17 @@ export class ProductsService {
   }
 
   private readonly imageInclude = { images: { orderBy: { sortOrder: "asc" as const } } };
+
+  private log(event: string, details: Record<string, unknown>) {
+    this.logger.log(JSON.stringify({ event, ...details }));
+  }
+
+  private logError(event: string, error: unknown, details: Record<string, unknown>) {
+    this.logger.error(
+      JSON.stringify({ event, ...details, error: error instanceof Error ? error.message : String(error) }),
+      error instanceof Error ? error.stack : undefined,
+    );
+  }
 
   private throwNotFoundForMissingProduct(error: unknown, id: string): void {
     if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2025") {

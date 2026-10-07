@@ -65,6 +65,13 @@ describe("ProductsService", () => {
     expect(prisma.product.findUnique).toHaveBeenCalledWith(expect.objectContaining({ where: { id: product.id } }));
   });
 
+  it("persists a newly added price and can clear it", async () => {
+    prisma.product.update.mockResolvedValue({ ...product, pricePence: 3000 });
+    await expect(service.update(product.id, { pricePence: 3000 })).resolves.toMatchObject({ pricePence: 3000 });
+    prisma.product.update.mockResolvedValue({ ...product, pricePence: null });
+    await expect(service.update(product.id, { pricePence: null })).resolves.toMatchObject({ pricePence: null });
+  });
+
   it("rejects malformed service-level reorder input", async () => {
     await expect(service.reorderImages(product.id, undefined as never)).rejects.toBeInstanceOf(BadRequestException);
     await expect(service.reorderImages(product.id, ["not-a-uuid"])).rejects.toBeInstanceOf(BadRequestException);

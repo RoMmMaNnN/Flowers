@@ -19,7 +19,7 @@ type ProductInput = {
   title: string;
   description: string;
   isVisible: boolean;
-  pricePence?: number;
+  pricePence?: number | null;
   isAvailable: boolean;
   sortOrder: number;
 };
