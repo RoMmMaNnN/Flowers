@@ -118,7 +118,7 @@ export default function Home() {
                   <ContactIcon type="instagram" />
                   <span className="contactContentBlock">
                     <span className="contactLabel">Instagram</span>
-                    <span className="contactValue">@Belfastsweetpresentsforeveryone</span>
+                    <span className="contactValue">@</span>
                   </span>
                 </a>
               )}
