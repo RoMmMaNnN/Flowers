@@ -100,7 +100,6 @@ export default function Home() {
                   <span className="contactContentBlock">
                     <span className="contactLabel">WhatsApp</span>
                     <span className="contactValue">{formatPhoneForDisplay(siteConfig.phone)}</span>
-                    <span className="contactMeta">{siteConfig.whatsappDisplayName}</span>
                   </span>
                 </a>
               )}
@@ -113,12 +112,12 @@ export default function Home() {
                   </span>
                 </a>
               )}
-              {siteConfig.instagramUrl && (
+              {siteConfig.instagramUrl && siteConfig.instagramDisplayName && (
                 <a className="contactCard" href={siteConfig.instagramUrl} target="_blank" rel="noopener noreferrer" aria-label="Visit Sweet Bouquets on Instagram">
                   <ContactIcon type="instagram" />
                   <span className="contactContentBlock">
                     <span className="contactLabel">Instagram</span>
-                    <span className="contactValue">@</span>
+                    <span className="contactValue">@{siteConfig.instagramDisplayName}</span>
                   </span>
                 </a>
               )}
@@ -155,7 +154,7 @@ export default function Home() {
             <div className="footer-contact-list">
               {siteConfig.phone && <a className="footer-contact-item" href={whatsAppHref(siteConfig.phone)} target="_blank" rel="noopener noreferrer"><span>WhatsApp</span><strong>{formatPhoneForDisplay(siteConfig.phone)}</strong></a>}
               {siteConfig.businessEmail && <a className="footer-contact-item" href={`mailto:${siteConfig.businessEmail}`}><span>Email</span><strong>{siteConfig.businessEmail}</strong></a>}
-              {siteConfig.instagramUrl && <a className="footer-contact-item" href={siteConfig.instagramUrl} target="_blank" rel="noopener noreferrer"><span>Instagram <span aria-hidden="true">↗</span></span><strong>@{siteConfig.instagramDisplayName}</strong></a>}
+              {siteConfig.instagramUrl && siteConfig.instagramDisplayName && <a className="footer-contact-item" href={siteConfig.instagramUrl} target="_blank" rel="noopener noreferrer"><span>Instagram <span aria-hidden="true">↗</span></span><strong>@{siteConfig.instagramDisplayName}</strong></a>}
             </div>
           </section>
         </div>
