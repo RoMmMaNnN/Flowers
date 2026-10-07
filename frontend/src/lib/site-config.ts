@@ -2,6 +2,7 @@ export const siteConfig = {
   businessEmail: process.env.NEXT_PUBLIC_ORDER_EMAIL?.trim() ?? "belfastsweetpresents@gmail.com",
   phone: process.env.NEXT_PUBLIC_BUSINESS_PHONE?.trim() ?? "447795272359",
   instagramUrl: process.env.NEXT_PUBLIC_INSTAGRAM_URL?.trim() ?? "https://www.instagram.com/Belfastsweetpresentsforeveryone/",
+  instagramDisplayName: "Belfastsweetpresentsforeveryone",
   whatsappDisplayName: "Belfastsweetpresentsforeveryone",
 };
 

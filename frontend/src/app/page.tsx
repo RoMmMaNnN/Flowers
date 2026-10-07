@@ -3,7 +3,7 @@
 import Image from "next/image";
 import { useEffect, useState } from "react";
 import { api, Product } from "@/lib/api";
-import { formatPhoneForDisplay, phoneHref, productEnquiryHref, siteConfig, whatsAppHref } from "@/lib/site-config";
+import { formatPhoneForDisplay, productEnquiryHref, siteConfig, whatsAppHref } from "@/lib/site-config";
 
 export default function Home() {
   const [products, setProducts] = useState<Product[]>([]);
@@ -142,20 +142,34 @@ export default function Home() {
       </section>
 
       <footer className="site-footer">
-        <div className="site-footer-inner">
-          <a className="brand-mark" href="#top"><span className="brand-dot" aria-hidden="true" /><span>Sweet Bouquets</span></a>
-          <p>Handmade sweet gifts for meaningful moments.</p>
-          <nav aria-label="Footer navigation">
-            <a href="#top">Home</a>
-            <a href="#about">Our approach</a>
-            <a href="#products">Collection</a>
-            <a href="#contact">Contact</a>
+        <div className="footer-main">
+          <section className="footer-brand" aria-labelledby="footer-brand-title">
+            <a className="brand-mark" id="footer-brand-title" href="#top"><span className="brand-dot" aria-hidden="true" /><span>Sweet Bouquets</span></a>
+            <p>Handmade Sweet Gifts for Meaningful Moments</p>
+          </section>
+
+          <nav className="footer-navigation" aria-label="Footer navigation">
+            <p className="footer-label">Navigation</p>
+            <div className="footer-link-list">
+              <a href="#top">Home</a>
+              <a href="#about">Our approach</a>
+              <a href="#products">Collection</a>
+              <a href="#contact">Contact</a>
+            </div>
           </nav>
-          <div className="footer-contact" aria-label="Contact details">
-            {siteConfig.businessEmail && <a href={`mailto:${siteConfig.businessEmail}`}>{siteConfig.businessEmail}</a>}
-            {siteConfig.phone && <a href={phoneHref(siteConfig.phone)}>{formatPhoneForDisplay(siteConfig.phone)}</a>}
-            {siteConfig.instagramUrl && <a href={siteConfig.instagramUrl} target="_blank" rel="noopener noreferrer">Instagram <span aria-hidden="true">↗</span></a>}
-          </div>
+
+          <section className="footer-contact" aria-labelledby="footer-contact-title">
+            <p className="footer-label" id="footer-contact-title">Contact</p>
+            <div className="footer-contact-list">
+              {siteConfig.phone && <a className="footer-contact-item" href={whatsAppHref(siteConfig.phone)} target="_blank" rel="noopener noreferrer"><span>WhatsApp</span><strong>{formatPhoneForDisplay(siteConfig.phone)}</strong></a>}
+              {siteConfig.businessEmail && <a className="footer-contact-item" href={`mailto:${siteConfig.businessEmail}`}><span>Email</span><strong>{siteConfig.businessEmail}</strong></a>}
+              {siteConfig.instagramUrl && <a className="footer-contact-item" href={siteConfig.instagramUrl} target="_blank" rel="noopener noreferrer"><span>Instagram <span aria-hidden="true">↗</span></span><strong>@{siteConfig.instagramDisplayName}</strong></a>}
+            </div>
+          </section>
+        </div>
+
+        <div className="footer-bottom">
+          <span>© 2026 Sweet Bouquets</span>
         </div>
       </footer>
     </main>

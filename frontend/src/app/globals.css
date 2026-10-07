@@ -1749,50 +1749,114 @@ button:disabled {
 
 .public-site .site-footer {
   width: 100%;
-  padding: 2.3rem 0 3rem;
+  padding: clamp(3.5rem, 7vw, 5.5rem) 0 2rem;
 }
 
-.public-site .site-footer-inner {
+.public-site .footer-main {
   width: min(100% - 3rem, 80rem);
   margin: 0 auto;
   display: grid;
-  grid-template-columns: auto minmax(0, 1fr) auto auto;
-  align-items: center;
-  gap: 1.25rem 2rem;
+  grid-template-columns: minmax(0, 1.5fr) minmax(140px, 0.75fr) minmax(220px, 1fr);
+  align-items: start;
+  column-gap: clamp(2.5rem, 5vw, 4rem);
+  row-gap: 2.5rem;
 }
 
-.public-site .site-footer p {
-  margin: 0;
-  color: #7d7067;
-}
-
-.public-site .site-footer nav {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: 0.9rem 1.25rem;
-}
-
+.public-site .footer-brand,
+.public-site .footer-navigation,
 .public-site .footer-contact {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: flex-end;
-  gap: 0.45rem 1rem;
   min-width: 0;
 }
 
-.public-site .footer-contact a {
-  max-width: 100%;
+.public-site .footer-brand p {
+  margin: 0;
+  max-width: 17rem;
+  margin-top: 1.15rem;
   color: #7d7067;
   font-family: Arial, sans-serif;
-  font-size: 0.75rem;
-  overflow-wrap: anywhere;
-  text-decoration: none;
-  transition: color 180ms ease;
+  font-size: 0.82rem;
+  line-height: 1.6;
 }
 
-.public-site .footer-contact a:hover {
+.public-site .footer-label {
+  margin: 0 0 1.2rem;
   color: var(--public-rose);
+  font-family: Arial, sans-serif;
+  font-size: 0.66rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.public-site .footer-link-list,
+.public-site .footer-contact-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+}
+
+.public-site .footer-link-list a {
+  width: fit-content;
+  color: var(--public-ink);
+  font-family: Arial, sans-serif;
+  font-size: 0.8rem;
+  text-decoration: none;
+  transition: color 180ms ease, transform 180ms ease;
+}
+
+.public-site .footer-link-list a:hover {
+  color: var(--public-rose);
+  transform: translateX(2px);
+}
+
+.public-site .footer-contact-list {
+  gap: 1rem;
+}
+
+.public-site .footer-contact-item {
+  display: grid;
+  min-width: 0;
+  gap: 0.2rem;
+  color: var(--public-ink);
+  font-family: Arial, sans-serif;
+  text-decoration: none;
+  transition: color 180ms ease, transform 180ms ease;
+}
+
+.public-site .footer-contact-item > span {
+  color: #7d7067;
+  font-size: 0.7rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.public-site .footer-contact-item strong {
+  max-width: 100%;
+  color: var(--public-ink);
+  font-size: 0.8rem;
+  font-weight: 400;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+.public-site .footer-contact-item:hover {
+  color: var(--public-rose);
+  transform: translateX(2px);
+}
+
+.public-site .footer-contact-item:hover strong {
+  color: var(--public-rose);
+}
+
+.public-site .footer-bottom {
+  width: min(100% - 3rem, 80rem);
+  margin: clamp(3rem, 6vw, 4.5rem) auto 0;
+  border-top: 1px solid var(--public-line);
+  padding-top: 1.25rem;
+  color: #91837a;
+  font-family: Arial, sans-serif;
+  font-size: 0.7rem;
+  letter-spacing: 0.04em;
 }
 
 @media (max-width: 900px) and (min-width: 761px) {
@@ -1819,14 +1883,21 @@ button:disabled {
   .public-site .contactGrid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
+
+  .public-site .footer-main {
+    grid-template-columns: minmax(0, 1.2fr) minmax(140px, 0.8fr);
+  }
+
+  .public-site .footer-contact {
+    grid-column: 1 / -1;
+  }
 }
 
 @media (max-width: 760px) {
   .public-site .site-header,
   .public-site .hero-section,
   .public-site .intro-band,
-  .public-site .catalogue-section,
-  .public-site .site-footer-inner {
+  .public-site .catalogue-section {
     width: min(100% - 2rem, 40rem);
   }
 
@@ -1923,21 +1994,17 @@ button:disabled {
     width: 100%;
   }
 
-  .public-site .site-footer-inner {
+  .public-site .footer-main,
+  .public-site .footer-bottom {
+    width: min(100% - 2rem, 40rem);
+  }
+
+  .public-site .footer-main {
     grid-template-columns: 1fr;
-    gap: 1rem;
-    padding: 0 0 2.5rem;
+    row-gap: 2.75rem;
   }
 
-  .public-site .site-footer nav,
-  .public-site .footer-contact {
-    justify-content: flex-start;
-  }
-
-  .public-site .footer-contact {
-    flex-direction: column;
-    align-items: flex-start;
-  }
+  .public-site .footer-contact { grid-column: auto; }
 }
 
 @media (max-width: 380px) {
